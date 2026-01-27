@@ -88,9 +88,82 @@ gpio_set_level(GPIO_NUM_2, led_level);
 
 
 
+## 5. 硬件IIC驱动OLED
+
+* 核心IIC通信函数
+
+```c
+// OLED写命令
+void OLED_WriteCommand(uint8_t Command)
+{
+    uint8_t writebuffer[2];
+
+    writebuffer[0] = 0x00;
+    writebuffer[1] = Command;
+    ESP_ERROR_CHECK(i2c_master_transmit(oled_dev_handle, writebuffer, 2, -1));
+}
+
+// OLED写数据
+void OLED_WriteData(uint8_t *Data, uint8_t Count)
+{
+	uint8_t i;
+    uint8_t writebuffer[Count+1];
+
+    writebuffer[0] = 0x40;
+
+    for (i = 0; i < Count; i ++)
+	{
+		writebuffer[i+1] = Data[i];
+	}
+    ESP_ERROR_CHECK(i2c_master_transmit(oled_dev_handle, writebuffer, Count+1, -1));
+}
+```
+
+* IIC 初始化函数
+  * 配置IIC总线：所有IIC可以通用
+  * 配置从机设备,这里只有OLED，其实还可以有更多，都需要配置从机，记住从机7位地址取原始7位地址
+
+```c
+//配置I2C总线
+i2c_master_bus_config_t oled_i2c_mst_cfg = 
+{
+    .clk_source = I2C_CLK_SRC_DEFAULT,      		//使用默认时钟源
+    .i2c_port = OLED_I2C_PORT,                      //指定I2C端口号
+    .scl_io_num = OLED_SCL,                      	//指定SCL引脚号
+    .sda_io_num = OLED_SDA,                      	//指定SDA引脚号
+    .glitch_ignore_cnt = 7,                 		//设置毛刺忽略计数
+    .flags.enable_internal_pullup = true,  			//禁用内部上拉电阻（前提是已经外部上拉）
+};
+
+//创建I2C总线并获取句柄
+ESP_ERROR_CHECK(i2c_new_master_bus(&oled_i2c_mst_cfg, &oled_bus_handle));
+
+//配置I2C从机设备
+i2c_device_config_t oled_dev_cfg = 
+{
+    .dev_addr_length = I2C_ADDR_BIT_LEN_7,  	 //设置设备地址长度为7位
+    .device_address = OLED_ADD >> 1,             //指定设备地址,这是OLED是8位,所以>>1
+    .scl_speed_hz = OLED_SPEED,                  //设置I2C时钟速度
+    .flags.disable_ack_check = false,       	 //启用ACK检查
+};
+
+//将设备添加到I2C总线并获取设备句柄
+ESP_ERROR_CHECK(i2c_master_bus_add_device(oled_bus_handle, &oled_dev_cfg, &oled_dev_handle));
+```
 
 
 
+## 100. 笔记
+
+### 100-1 库文件依赖
+
+* 基本格式
+
+```c
+idf_component_register(SRCS "Timer.c"
+                    INCLUDE_DIRS "."
+                    REQUIRES driver MyLED)
+```
 
 
 

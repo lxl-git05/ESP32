@@ -4,16 +4,32 @@
 #include "freertos/task.h"
 #include "driver/gpio.h"
 
+#include "Timer_Counter.h"
+
 #include "MyLED.h"
 #include "OLED.h"
 #include "Timer.h"
 #include "Key.h"
 #include "PWM.h"
+#include "Wifi_Manager.h"   // WIFI
 
-#include "Timer_Counter.h"
+void wifi_state_handler(WIFI_STATE state)
+{
+    switch (state)
+    {
+        case WIFI_STATE_CONNECTED:
+            ESP_LOGI("main" , "WIFI_STATE_CONNECTED");
+            break;
+        case WIFI_STATE_DISCONNECTED:
+            ESP_LOGI("main" , "WIFI_STATE_DISCONNECTED");
+            break;
+        default:
+            break;
+    }
+}
 
-int check = 0 ;
-int duty = 0 ;
+#define DEFAULT_WIFI_SSID "lxl_WIFI"
+#define DEFAULT_WIFI_PASSWORD "88888888"
 
 void app_main(void)
 {
@@ -22,6 +38,8 @@ void app_main(void)
     Timer_Init();
     Key_Init();
     PWM_Init();
+    Wifi_Manager_Init(wifi_state_handler) ;
+    Wifi_Manager_Connect(DEFAULT_WIFI_SSID , DEFAULT_WIFI_PASSWORD) ;
     while (1)
     {
         Timer_Counter_Func() ;
@@ -37,19 +55,10 @@ void app_main(void)
             printf("Key_0 Double\n");
             Timer_Counter_Print();
         }
-
-        PWM_Set_Duty_1024(duty , PWM_Channel_0) ;
-        PWM_Set_Duty_1024(1030 - duty , PWM_Channel_1) ;
         // 功能计时区
         Timer_Counter_Begin();
 
         Timer_Counter_End();
-
-        duty += 10 ;
-        if (duty >= 1023)
-        {
-            duty = 0 ;
-        }
         
         OLED_Update();
     }

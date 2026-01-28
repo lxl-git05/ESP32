@@ -1,9 +1,9 @@
 #include "Wifi_Manager.h"
 #include "nvs_flash.h"
-#include "esp_wifi.h"
 #include "esp_event.h"
 #include "esp_log.h"
 #include "stdio.h"
+#include "lwip/ip4_addr.h"
 
 static p_wifi_state_cb wifi_callback = NULL ;
 
@@ -12,6 +12,12 @@ static int sta_connect_cnt = 0;//重连的次数
 
 //当前sta的ip连接状态
 static bool is_sta_connected = false;
+
+// AP配网参数
+static const char *ap_ssid_name = "ESP32-AP" ;
+static const char *ap_password = "12345678" ;
+static esp_netif_t* esp_netif_ap = NULL ;
+static SemaphoreHandle_t scan_sem = NULL;
 
 static void event_handler(void* arg, esp_event_base_t event_base,int32_t event_id, void* event_data) 
 {
@@ -42,6 +48,12 @@ static void event_handler(void* arg, esp_event_base_t event_base,int32_t event_i
                 break;
             case WIFI_EVENT_STA_CONNECTED:
                 ESP_LOGI("WIFI_Connected" , "Connected to AP") ;
+                break;
+            case WIFI_EVENT_AP_STACONNECTED:
+                ESP_LOGI("WIFI_AP_STACONNECTED" , "A station connected") ;
+                break;
+            case WIFI_EVENT_AP_STADISCONNECTED:
+                ESP_LOGI("WIFI_AP_STADISCONNECTED" , "A station disconnected") ;
                 break;
             default:    // 其他事件不处理
                 break;
@@ -74,6 +86,7 @@ void Wifi_Manager_Init(p_wifi_state_cb f)
     esp_netif_create_default_wifi_sta();
 
     // 使用默认配置初始化wifi
+    esp_netif_ap = esp_netif_create_default_wifi_ap() ;     // AP配网参数
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();    // 默认配置
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,         // WiFi事件基声明,选择默认的宏定义即可
@@ -87,6 +100,8 @@ void Wifi_Manager_Init(p_wifi_state_cb f)
                                                         NULL,
                                                         NULL));
     wifi_callback = f ;
+    scan_sem = xSemaphoreCreateBinary() ;
+    xSemaphoreGive(scan_sem) ;
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) ); // Station模式
 
 }
@@ -113,4 +128,76 @@ void Wifi_Manager_Connect(const char *ssid , const char *password)
     }
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config)) ;
     esp_wifi_start( );
+}
+
+// AP配网
+esp_err_t Wifi_Maneger_ap(void)
+{
+    wifi_mode_t mode ;
+    esp_wifi_get_mode(&mode);
+
+    // 检查是否进入AP + STA模式,必须有后者,否则无法扫描
+    if (mode == WIFI_MODE_APSTA)
+    {
+        return ESP_OK ;
+    }
+    // 断线重连
+    esp_wifi_disconnect() ;
+    esp_wifi_stop() ;
+    esp_wifi_set_mode(WIFI_MODE_APSTA) ;
+    // 配置参数
+    wifi_config_t wifi_config = {
+        .ap = {
+            .channel = 5 ,  // AP的信道,随便给的
+            .max_connection = 2 ,   // 最大连接数
+            .authmode = WIFI_AUTH_WPA_WPA2_PSK ,   // WPA2加密
+        }
+    };
+    sprintf((char*)wifi_config.ap.ssid , 32 , "%s" , ap_ssid_name) ;
+    wifi_config.ap.ssid_len = strlen(ap_ssid_name) ;
+    sprintf((char*)wifi_config.ap.password , 64 , "%s" , ap_password) ;
+    esp_wifi_set_config(WIFI_IF_AP, &wifi_config) ;
+
+    // IP,网关,子网掩码
+    esp_netif_ip_info_t ip_info ;
+    IP4_ADDR(&ip_info.ip , 192 , 168 , 100 , 1) ;
+    IP4_ADDR(&ip_info.gw , 192 , 168 , 100 , 1) ;
+    IP4_ADDR(&ip_info.netmask , 255 , 255 , 255 , 0) ;
+
+    esp_netif_dhcps_stop(&esp_netif_ap) ;   // 先关闭DHCP服务,原因见esp_netif_set_ip_info注释
+    esp_netif_set_ip_info(esp_netif_ap , &ip_info) ;    
+    esp_netif_dhcps_start(&esp_netif_ap) ;
+
+    return esp_wifi_start() ;
+}
+
+static void scan_task(void *param)
+{
+    p_wifi_scan_cb callback = (p_wifi_scan_cb)param ;
+    uint16_t ap_count = 0 ;
+    uint16_t ap_num = 20 ;
+    wifi_ap_record_t ap_list[20] ;
+
+    esp_wifi_scan_start(NULL , true) ;
+    esp_wifi_scan_get_ap_num(&ap_count) ;
+    esp_wifi_scan_get_ap_records(&ap_num , ap_list) ;
+
+    ESP_LOGI("WIFI_Scan" , "Total AP Count: %d Actual Num: %d" , ap_count ,ap_num) ;
+    if (callback != NULL)
+    {
+        callback(ap_num , ap_list) ;
+    }
+    xSemaphoreGive(scan_sem) ;
+    vTaskDelete(NULL) ;
+}
+
+// 扫描模式
+esp_err_t Wifi_Manager_scan(p_wifi_scan_cb f)
+{
+    if (pdTRUE == xSemaphoreTake(scan_sem , 0))
+    {
+        esp_wifi_clear_ap_list() ;
+        return xTaskCreatePinnedToCore(scan_task , "scan_task" , 4096 , f , 3 , NULL , 1) ;
+    }
+    return ESP_OK ;
 }

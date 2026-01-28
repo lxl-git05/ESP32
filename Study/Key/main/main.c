@@ -8,10 +8,12 @@
 #include "OLED.h"
 #include "Timer.h"
 #include "Key.h"
+#include "PWM.h"
 
 #include "Timer_Counter.h"
 
 int check = 0 ;
+int duty = 0 ;
 
 void app_main(void)
 {
@@ -19,6 +21,7 @@ void app_main(void)
     LED_Init();
     Timer_Init();
     Key_Init();
+    PWM_Init();
     while (1)
     {
         Timer_Counter_Func() ;
@@ -34,10 +37,19 @@ void app_main(void)
             printf("Key_0 Double\n");
             Timer_Counter_Print();
         }
+
+        PWM_Set_Duty_1024(duty , PWM_Channel_0) ;
+        PWM_Set_Duty_1024(1030 - duty , PWM_Channel_1) ;
         // 功能计时区
         Timer_Counter_Begin();
 
         Timer_Counter_End();
+
+        duty += 10 ;
+        if (duty >= 1023)
+        {
+            duty = 0 ;
+        }
         
         OLED_Update();
     }

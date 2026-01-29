@@ -43,6 +43,10 @@ static void event_handler(void* arg, esp_event_base_t event_base,int32_t event_i
                     esp_wifi_connect() ;
                     ESP_LOGI("WIFI_Disconnect" , "reconnect to AP") ;
                     sta_connect_cnt ++ ;
+                    if (sta_connect_cnt == MAX_CONNECT_RETRY)
+                    {
+                        printf("\n\nPlease Reconnect WIFI\n\n") ;
+                    }
                 }
                 break;
             case WIFI_EVENT_STA_CONNECTED:
@@ -143,4 +147,15 @@ void Wifi_Init(void)
 {
     Wifi_Manager_Init(wifi_state_handler) ;
     Wifi_Manager_Connect(DEFAULT_WIFI_SSID , DEFAULT_WIFI_PASSWORD) ;
+}
+
+// ‘Ÿ÷ÿ∆Ù10±È ‘ ‘ø¥
+void Wifi_Reconnect(void)
+{
+    if (!is_sta_connected)
+    {
+        esp_wifi_connect() ;
+        ESP_LOGI("WIFI_Disconnect" , "reconnect to AP") ;
+        sta_connect_cnt = 0 ;
+    }
 }

@@ -12,4 +12,6 @@ typedef enum
 typedef void (*p_wifi_state_cb)(WIFI_STATE) ;
 // WIFI初始化
 void Wifi_Init(void) ;
+// 重新初始化WIFI
+void Wifi_Reconnect(void);
 #endif

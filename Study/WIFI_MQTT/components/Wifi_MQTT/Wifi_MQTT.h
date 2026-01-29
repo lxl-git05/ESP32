@@ -14,6 +14,9 @@
 
 esp_err_t Wifi_MQTT_Connect_Start(void);
 
+// ·¢ËÍÊı¾İÔÆ¶Ë
+esp_err_t Send_To_Onenet(void);
+
 #endif
 
 

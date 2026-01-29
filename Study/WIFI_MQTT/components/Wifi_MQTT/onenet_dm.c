@@ -8,11 +8,6 @@ extern int LED_PWM;
 extern bool LED_Status ;
 
 // =========================== 物模型数据处理函数 ===========================
-// 物模型数据初始化
-void onenet_dm_init(void)
-{   
-    ;
-}
 
 // 下行数据接收:处理onenet下行的数据
 void onenet_property_handle(cJSON* property_js)
@@ -61,7 +56,7 @@ void onenet_property_handle(cJSON* property_js)
 }
 
 // 生成上报给onene的所有数据的cJSON对象
-cJSON* onenet_property_upload_dm(void)
+cJSON* onenet_generate_property_data(void)
 {
     // 顶级
     cJSON* root = cJSON_CreateObject();

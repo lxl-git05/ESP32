@@ -8,12 +8,16 @@
 #include <stdint.h>
 #include <string.h>
 
-#define TAG "onenet_mqtt"
-
+// MQTT的TAG
+#define TAG "Onenet_mqtt"
 //连接成功标志位
 static bool onenet_connected_flg = false;
 //mqtt连接客户端
 static esp_mqtt_client_handle_t mqtt_handle = NULL;
+
+// ========================== 中国移动-Onenet-MQTT服务 函数 ==========================
+
+esp_err_t Send_To_Onenet(void) ;
 
 // 事件回调
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
@@ -25,13 +29,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             ESP_LOGI(TAG, "Onenet mqtt connected");
             onenet_connected_flg = true;
             // 连接完成后先发送一次订阅和数据
+
+            // 发送Topic
             onenet_subscribe(mqtt_handle ,onenet_connected_flg , ONENET_PRODUCT_ID, ONENET_DEVICE_NAME ); // 订阅上位机两种消息
             
-            cJSON* property_js = onenet_property_upload_dm();   // 生成上报数据
-            char* data = cJSON_PrintUnformatted(property_js);   // 数据转为字符串
-            onenet_post_property_data(mqtt_handle , data ,onenet_connected_flg ,  ONENET_PRODUCT_ID ,ONENET_DEVICE_NAME );    // 上报数据
-            cJSON_free(data);
-            cJSON_Delete(property_js);
+            // 发送数据
+            Send_To_Onenet() ;
 
             break;
         case MQTT_EVENT_DISCONNECTED:
@@ -73,11 +76,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     }
 }
 
-// 初始化
+// 初始化MQTT
 esp_err_t Wifi_MQTT_Connect_Start(void)
 {
     esp_mqtt_client_config_t mqtt_config ;
     memset(&mqtt_config , 0 , sizeof(esp_mqtt_client_config_t)) ;
+
     mqtt_config.broker.address.uri = "mqtt://mqtts.heclouds.com" ;
     mqtt_config.broker.address.port = 1883 ;
 
@@ -98,7 +102,7 @@ esp_err_t Wifi_MQTT_Connect_Start(void)
 // 发送数据到云端
 esp_err_t Send_To_Onenet(void)
 {
-    cJSON* property_js = onenet_property_upload_dm();
+    cJSON* property_js = onenet_generate_property_data();
     char* data = cJSON_PrintUnformatted(property_js);
     onenet_post_property_data(mqtt_handle, data, onenet_connected_flg, ONENET_PRODUCT_ID, ONENET_DEVICE_NAME);
     cJSON_free(data);

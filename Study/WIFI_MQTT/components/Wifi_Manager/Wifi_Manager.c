@@ -6,18 +6,34 @@
 #include "stdio.h"
 
 #include "Wifi_MQTT.h"
+/*
+    Wifi_Manager库回调函数:
+        1. event_handler:
+            WIFI和IP事件中断回调函数:只要有事件WIFI相关的函数调用就会触发,如connect函数,进行事件处理
+        2. wifi_state_handler:(=wifi_callback)
+            WIFI连接状态回调函数:WIFI或IP断开或者WIFI+IP都连接才会触发,只起通知作用,毕竟event_handler可以处理Any事件,当WIFI和IP都连接上时可以进行下一步处理了:MQTT/其他通信方式的连接,所以本库解耦度很高,只需要修改wifi_state_handler连接成功后选择哪种通信方式即可
+*/
 
+// 热点/WIFI - 账号,密码
 #define DEFAULT_WIFI_SSID "lxl_WIFI"
 #define DEFAULT_WIFI_PASSWORD "88888888"
 
+// WIFI_Manager库的TAG
+#define TAG "WIFI_Manager"
+
+// WIFI连接状态回调函数
 static p_wifi_state_cb wifi_callback = NULL ;
 
-#define MAX_CONNECT_RETRY 10
-static int sta_connect_cnt = 0;//重连的次数
+// WIFI重连
+#define MAX_CONNECT_RETRY 10   // 最大重连次数
+static int sta_connect_cnt = 0;//重连次数计数
 
 //当前sta的ip连接状态
 static bool is_sta_connected = false;
 
+// ======================== WIFI和IP初始化函数 ========================
+
+// WIFI和IP事件中断回调函数
 static void event_handler(void* arg, esp_event_base_t event_base,int32_t event_id, void* event_data) 
 {
     // 先判断事件:WIFI还是IP
@@ -41,7 +57,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,int32_t event_i
                 if (sta_connect_cnt < MAX_CONNECT_RETRY)
                 {
                     esp_wifi_connect() ;
-                    ESP_LOGI("WIFI_Disconnect" , "reconnect to AP") ;
+                    ESP_LOGI(TAG , "reconnect to AP") ;
                     sta_connect_cnt ++ ;
                     if (sta_connect_cnt == MAX_CONNECT_RETRY)
                     {
@@ -50,7 +66,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,int32_t event_i
                 }
                 break;
             case WIFI_EVENT_STA_CONNECTED:
-                ESP_LOGI("WIFI_Connected" , "Connected to AP") ;
+                ESP_LOGI(TAG , "Connected to AP") ;
                 break;
             default:    // 其他事件不处理
                 break;
@@ -61,7 +77,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,int32_t event_i
         // 只关注ip是否连接成功
         if (event_id == IP_EVENT_STA_GOT_IP)
         {
-            ESP_LOGI("WIFI_Got_IP" , "Got IP from AP");
+            ESP_LOGI(TAG , "Got IP from AP");
             is_sta_connected = true ;
             if (wifi_callback != NULL)
             {
@@ -71,7 +87,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,int32_t event_i
     }
 }
 
-// WIFI初始化
+// WIFI和IP初始化
 void Wifi_Manager_Init(p_wifi_state_cb f) 
 {
     // 初始化nvs和网络接口
@@ -124,18 +140,19 @@ void Wifi_Manager_Connect(const char *ssid , const char *password)
     esp_wifi_start( );
 }
 
-// =========================== 外部调用wifi功能 ===========================
-
+// =========================== 外部(main)调用wifi功能 ===========================
+// WIFI连接状态回调函数
 void wifi_state_handler(WIFI_STATE state)
 {
     switch (state)
     {
         case WIFI_STATE_CONNECTED:
-            ESP_LOGI("main" , "WIFI_STATE_CONNECTED");
-            ESP_ERROR_CHECK(Wifi_MQTT_Connect_Start());
+            ESP_LOGI(TAG , "WIFI_STATE_CONNECTED");
+            /* 开启MQTT连接 */
+            ESP_ERROR_CHECK(Wifi_MQTT_Connect_Start()); // !!!!!!!可以改成其他连接方式!!!!!!!!
             break;
         case WIFI_STATE_DISCONNECTED:
-            ESP_LOGI("main" , "WIFI_STATE_DISCONNECTED");
+            ESP_LOGI(TAG , "WIFI_STATE_DISCONNECTED");
             break;
         default:
             break;
@@ -149,13 +166,13 @@ void Wifi_Init(void)
     Wifi_Manager_Connect(DEFAULT_WIFI_SSID , DEFAULT_WIFI_PASSWORD) ;
 }
 
-// 再重启10遍试试看
+// WIFI断线重连(10次重连后需要再次调用该函数)
 void Wifi_Reconnect(void)
 {
     if (!is_sta_connected)
     {
-        esp_wifi_connect() ;
-        ESP_LOGI("WIFI_Disconnect" , "reconnect to AP") ;
+        esp_wifi_connect() ;    // 要触发一下WIFI状态回调,激发重复WIFI重连
+        ESP_LOGI(TAG , "reconnect to AP") ;
         sta_connect_cnt = 0 ;
     }
 }

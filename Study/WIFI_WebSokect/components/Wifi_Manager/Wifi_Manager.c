@@ -5,7 +5,8 @@
 #include "esp_log.h"
 #include "stdio.h"
 
-#include "Wifi_MQTT.h"
+// #include "Wifi_MQTT.h"
+#include "Wifi_WebSocket.h"
 /*
     Wifi_Manager库回调函数:
         1. event_handler:
@@ -150,6 +151,7 @@ void wifi_state_handler(WIFI_STATE state)
             ESP_LOGI(TAG , "WIFI_STATE_CONNECTED");
             /* 开启MQTT连接 */
             // ESP_ERROR_CHECK(Wifi_MQTT_Connect_Start()); // !!!!!!!可以改成其他连接方式!!!!!!!!
+            wifi_http_main() ;
             break;
         case WIFI_STATE_DISCONNECTED:
             ESP_LOGI(TAG , "WIFI_STATE_DISCONNECTED");

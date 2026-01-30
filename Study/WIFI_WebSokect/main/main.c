@@ -4,6 +4,7 @@
 char Command[64] = {0} ;
 int LED_PWM = 0 ;
 bool LED_Status ;
+int led_state = 0;
 
 void app_main(void)
 {
@@ -29,7 +30,7 @@ void app_main(void)
             Wifi_Reconnect();
         }
         // LED
-        LED_Write(LED_Status);
+        LED_Write(led_state);
         PWM_Set_Duty_1024(LED_PWM , PWM_Channel_0);
         // 功能计时区
         Timer_Counter_Begin();

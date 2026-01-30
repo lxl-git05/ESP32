@@ -6,5 +6,5 @@ idf_component_register(
         esp_wifi
         esp_event
         esp_netif
-        Wifi_MQTT   # 依赖的mqtt_onenet组件
+        Wifi_WebSocket   # 依赖的mqtt_onenet组件
 )

@@ -9,6 +9,7 @@
   * 当前版本发布时间：		2024.4.24
 ***************************************************************************************/
 #include "OLED.h"
+#include "I2C.h"
 /*全局变量*********************/
 
 /**
@@ -19,14 +20,8 @@
   */
 uint8_t OLED_DisplayBuf[8][128];
 
-#define OLED_I2C_PORT   I2C_NUM_0
-#define OLED_SCL    	GPIO_NUM_1
-#define OLED_SDA    	GPIO_NUM_2
 #define OLED_ADD    	0x78			// 注意,这是 7位地址 << 1
 #define OLED_SPEED  	400000
-
-//I2C总线句柄
-i2c_master_bus_handle_t oled_bus_handle;
 
 //OLED设备句柄
 i2c_master_dev_handle_t oled_dev_handle;
@@ -85,20 +80,8 @@ void OLED_WriteData(uint8_t *Data, uint8_t Count)
   */
 void OLED_Init(void)
 {
-    //配置I2C总线
-    i2c_master_bus_config_t oled_i2c_mst_cfg = 
-    {
-        .clk_source = I2C_CLK_SRC_DEFAULT,      		//使用默认时钟源
-        .i2c_port = OLED_I2C_PORT,                      //指定I2C端口号
-        .scl_io_num = OLED_SCL,                      	//指定SCL引脚号
-        .sda_io_num = OLED_SDA,                      	//指定SDA引脚号
-        .glitch_ignore_cnt = 7,                 		//设置毛刺忽略计数
-        .flags.enable_internal_pullup = true,  			//禁用内部上拉电阻（前提是已经外部上拉）
-    };
-	
-    //创建I2C总线并获取句柄
-    ESP_ERROR_CHECK(i2c_new_master_bus(&oled_i2c_mst_cfg, &oled_bus_handle));
-
+	// 配置IIC总线,如果已经配置,则跳过
+	I2C_Master_Init() ;
     //配置I2C从机设备
     i2c_device_config_t oled_dev_cfg = 
     {
@@ -109,7 +92,7 @@ void OLED_Init(void)
     };
     
     //将设备添加到I2C总线并获取设备句柄
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(oled_bus_handle, &oled_dev_cfg, &oled_dev_handle));
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_bus_handle, &oled_dev_cfg, &oled_dev_handle));
 	
 	/*写入一系列的命令，对OLED进行初始化配置*/
 	OLED_WriteCommand(0xAE);	//设置显示开启/关闭，0xAE关闭，0xAF开启

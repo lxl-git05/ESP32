@@ -93,7 +93,7 @@ void OLED_Init(void)
         .scl_io_num = OLED_SCL,                      	//指定SCL引脚号
         .sda_io_num = OLED_SDA,                      	//指定SDA引脚号
         .glitch_ignore_cnt = 7,                 		//设置毛刺忽略计数
-        .flags.enable_internal_pullup = true,  			//禁用内部上拉电阻（前提是已经外部上拉）
+        .flags.enable_internal_pullup = true,  			//启动内部上拉电阻
     };
 	
     //创建I2C总线并获取句柄

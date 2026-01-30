@@ -151,7 +151,7 @@ void wifi_state_handler(WIFI_STATE state)
             ESP_LOGI(TAG , "WIFI_STATE_CONNECTED");
             /* 开启MQTT连接 */
             // ESP_ERROR_CHECK(Wifi_MQTT_Connect_Start()); // !!!!!!!可以改成其他连接方式!!!!!!!!
-            wifi_http_main() ;
+            Wifi_HTTP_Init() ;
             break;
         case WIFI_STATE_DISCONNECTED:
             ESP_LOGI(TAG , "WIFI_STATE_DISCONNECTED");

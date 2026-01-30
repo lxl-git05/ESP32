@@ -1,31 +1,52 @@
 #include "Wifi_WebSocket.h"
 
+// ======================= 外部参数 =======================
 extern int led_state;
+// ======================= WebSocket参数 =======================
 // HTTP服务器句柄
 httpd_handle_t server = NULL;   
 // 用于异步发送 WebSocket 数据的结构体
-struct async_resp_arg {
+struct async_resp_arg 
+{
     httpd_handle_t hd;
     int fd;
 };
 // TAG
 static const char *TAG = "WebSocket Server"; // TAG for debug
+// ======================= HTML参数 =======================
 //  SPIFFS 中 HTML 文件路径
 #define INDEX_HTML_PATH "/spiffs/index.html"
 // 缓存 HTML 内容和发送给 客户端 的字符串
-char index_html[4096];
-char response_data[4096];
+#define HTML_STRING_SIZE 4096
+char index_html[HTML_STRING_SIZE];
+char response_data[HTML_STRING_SIZE];
+// ======================= 宏定义 =======================
+// 自定义宏:替代原先宏,增强性能
+#define CONFIG_LWIP_MAX_LISTENING_TCP_lxl 4
+#define HTML_STACK_SIZE 4096    // 视HTML大小定
+// ======================= 程序移植 =======================
+/*
+    1. HTML文件的位置:INDEX_HTML_PATH:建议不变,懒得折腾
+    2. HTML文件的大小和后续发送存储栈的大小 1. HTML_STRING_SIZE 2. HTML_STACK_SIZE
+    3. HTML客户端最大个数: CONFIG_LWIP_MAX_LISTENING_TCP_lxl
+    4. 处理HTML的GET请求:get_req_handler,其实就是数据更新
+    5. 
+*/
 
+// ======================= 函数定义 =======================
 // SPIFFS 初始化和读取 HTML 文件
 static void initi_web_page_buffer(void)
 {
+    static bool spiffs_registered = false;
+    if (spiffs_registered) return;  // 已经注册过就直接返回
+
     esp_vfs_spiffs_conf_t conf = {
         .base_path = "/spiffs",
         .partition_label = NULL,    // 使用的分区,NULL表示自己检测到的第一个叫spiff的分区
         .max_files = 5,             // 同一时间最多能打开的文件数
         .format_if_mount_failed = true
     };
-
+    // esp_vfs_spiffs_register只能调用一次，如果已经注册，再调用就会重启程序,所以需要进行注册判断
     ESP_ERROR_CHECK(esp_vfs_spiffs_register(&conf));
 
     memset((void *)index_html, 0, sizeof(index_html));
@@ -42,11 +63,13 @@ static void initi_web_page_buffer(void)
         ESP_LOGE(TAG, "fread failed");
     }
     fclose(fp);
+    spiffs_registered = true;  // 标记已注册
 }
 // 处理HTTP GET请求,发送html
 esp_err_t get_req_handler(httpd_req_t *req)
 {
     int response;
+    // 自定义功能:字符串格式化,记得按顺序将%d , %s等替换为实际值
     if(led_state)
     {
         // 把 HTML 模板里的 %s 替换成 LED 状态
@@ -68,19 +91,21 @@ static void ws_async_send(void *arg)
     httpd_handle_t hd = resp_arg->hd;
     int fd = resp_arg->fd;
 
+    // 自定义参数处理模式
     led_state = !led_state;
-    // gpio_set_level(LED_PIN, led_state);  // main会做
-    // 准备发送数据
+
+    // 准备发送数据:也需要根据需求自定义
     char buff[4];
     memset(buff, 0, sizeof(buff));
     sprintf(buff, "%d",led_state);
+
     // 初始化 WebSocket 帧
     memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
     ws_pkt.payload = (uint8_t *)buff;
     ws_pkt.len = strlen(buff);
     ws_pkt.type = HTTPD_WS_TYPE_TEXT;
     // 获取客户端列表
-    static size_t max_clients = CONFIG_LWIP_MAX_LISTENING_TCP;
+    static size_t max_clients = CONFIG_LWIP_MAX_LISTENING_TCP_lxl;  // 客户端最大数,我自己定义的
     size_t fds = max_clients;
     int client_fds[max_clients];
 
@@ -102,7 +127,7 @@ static void ws_async_send(void *arg)
 static esp_err_t trigger_async_send(httpd_handle_t handle, httpd_req_t *req)
 {
     struct async_resp_arg *resp_arg = malloc(sizeof(struct async_resp_arg));
-    resp_arg->hd = req->handle;
+    // resp_arg->hd = req->handle;
     resp_arg->fd = httpd_req_to_sockfd(req);
     return httpd_queue_work(handle, ws_async_send, resp_arg);
 }
@@ -161,6 +186,8 @@ static esp_err_t handle_ws_req(httpd_req_t *req)
 httpd_handle_t setup_websocket_server(void)
 {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+    // 性能配置
+    config.stack_size = HTML_STACK_SIZE;     // 大页面或复杂逻辑需要更大栈,自己调整
     
     // 配置 HTTP GET 处理器（网页）
     httpd_uri_t uri_get = {
@@ -185,26 +212,10 @@ httpd_handle_t setup_websocket_server(void)
     return server;
 }
 
-void wifi_http_main(void)
+void Wifi_HTTP_Init(void)
 {
-    // 初始化 NVS
-    // esp_err_t ret = nvs_flash_init();
-    // if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
-    // {
-    //     ESP_ERROR_CHECK(nvs_flash_erase());
-    //     ret = nvs_flash_init();
-    // }
-    // ESP_ERROR_CHECK(ret);
-    // 连接wifi
-    // connect_wifi();
-
-    // if (wifi_connect_status)
-    if (1)
-    {
-        led_state = 0;
-        ESP_LOGI(TAG, "ESP32 ESP-IDF WebSocket Web Server is running ... ...\n");
-        initi_web_page_buffer();
-        setup_websocket_server();
-    }
+    led_state = 0;
+    ESP_LOGI(TAG, "ESP32 ESP-IDF WebSocket Web Server is running ... ...\n");
+    initi_web_page_buffer();
+    setup_websocket_server();
 }
-

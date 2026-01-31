@@ -1,0 +1,32 @@
+# ESP32综合项目路径
+
+- [ ] 常规项目
+  - [x] GPIO
+    - [x] 输入：Key外设
+    - [x] 输出：LED外设
+  - [ ] I2C
+    - [x] OLED
+    - [x] MPU6050
+  - [x] Timer
+  - [x] Timer_Counter
+  - [ ] USART
+- [ ] WIFI
+  - [ ] WIFI配网：蓝牙配网
+  - [x] 信息互传
+    - [x] MQTT
+    - [x] WebSocket
+  - [ ] 图传
+    - [ ] Web
+    - [ ] WebSocket
+- [ ] CAM
+  - [ ] 图片格式
+  - [ ] 视频流
+- [ ] Freertos
+- [ ] 计算机视觉处理
+  - [ ] Python入门
+  - [ ] Opencv基础
+  - [ ] AI模型训练
+- [ ] Web开发基础
+  - [x] HTML
+  - [x] CCS
+  - [ ] JavaScript

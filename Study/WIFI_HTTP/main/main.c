@@ -1,6 +1,8 @@
 #include "Initial.h"
 #include "Wifi_Manager.h"
 
+float hum = 0.0f ;
+float temp = 26.0f ;
 int check = 0 ;
 
 void app_main(void)
@@ -23,12 +25,19 @@ void app_main(void)
         if(Key_Check(KEY_0 , KEY_SINGLE))
         {
             printf("Key0 Single\n") ;
+            hum += 0.105 ;
             PWM_Set_Duty_1024(  0 , PWM_Channel_0) ;
         }
         else if(Key_Check(KEY_0 , KEY_DOUBLE))
         {
+            temp += 2.456 ;
             PWM_Set_Duty_1024(512 , PWM_Channel_0) ;
             Timer_Counter_Print() ;
+        }
+        else
+        {
+            // WIFI断连十次之后就不再尝试重连,此时只能Reset或者长按按键手动重连
+            Wifi_Reconnect() ;
         }
         OLED_Update();
     }

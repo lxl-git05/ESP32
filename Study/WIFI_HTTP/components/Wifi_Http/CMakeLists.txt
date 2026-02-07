@@ -1,10 +1,10 @@
 idf_component_register(
-    SRCS "Wifi_Manager.c"
+    SRCS "WIfi_Http.c" "Wifi_Http.c"
     INCLUDE_DIRS "."
     REQUIRES
         nvs_flash
         esp_wifi
         esp_event
         esp_netif
-        Wifi_Http   
+        esp_http_server
 )

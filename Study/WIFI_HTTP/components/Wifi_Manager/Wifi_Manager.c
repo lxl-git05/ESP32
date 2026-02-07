@@ -5,6 +5,8 @@
 #include "esp_log.h"
 #include "stdio.h"
 
+#include "Wifi_Http.h"
+
 /*
     Wifi_Manager库回调函数:
         1. event_handler:
@@ -148,7 +150,7 @@ void wifi_state_handler(WIFI_STATE state)
         case WIFI_STATE_CONNECTED:
             ESP_LOGI(TAG , "WIFI_STATE_CONNECTED");
             /* 开启协议连接 */
-            
+            Http_Init() ;
             break;
         case WIFI_STATE_DISCONNECTED:
             ESP_LOGI(TAG , "WIFI_STATE_DISCONNECTED");

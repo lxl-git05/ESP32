@@ -8,7 +8,7 @@ float temp = 26.0f ;
 void app_main(void)
 {
     Initial() ;
-    // Wifi_Init() ;   // 初始化WIFI连接,并且内含HTTP协议过程
+    Wifi_Init() ;   // 初始化WIFI连接,并且内含HTTP协议过程
     Cam_Init() ;
     
     while (1)
@@ -18,7 +18,7 @@ void app_main(void)
         // 计时
         Timer_Counter_Begin() ; // ============================ 计时开始
 
-        picture() ;
+        // picture() ;
 
         Timer_Counter_End();    // ============================ 计时结束
 
@@ -40,6 +40,7 @@ void app_main(void)
             // WIFI断连十次之后就不再尝试重连,此时只能Reset或者长按按键手动重连
             Wifi_Reconnect() ;
         }
+        vTaskDelay(pdMS_TO_TICKS(20));   // 防止看门狗死掉
         // OLED_Update();
     }
 }

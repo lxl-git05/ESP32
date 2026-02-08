@@ -15,6 +15,7 @@
 #include "esp_netif.h"
 
 #include "Wifi_Http_HTML.h" // 内含自设HTML界面
+#include "CAM.h"            // 图传
 
 extern float hum  ;
 extern float temp ;
@@ -78,8 +79,9 @@ httpd_handle_t Http_Init(void)
     httpd_config_t config = HTTPD_DEFAULT_CONFIG() ;    // 使用默认的参数
     httpd_handle_t server = NULL ;                      // 服务句柄
 
-    // 处理请求端
-    server = Http_Event_Resister("/" , HTTP_GET , get_req_handler , &config) ;    // 1. "/" - GET - 数据更新
+    // 处理请求端,注意,1个端口只能含有一个处理
+    // server = Http_Event_Resister("/" , HTTP_GET , get_req_handler , &config) ;    // 1. "/" - GET - 数据更新
+    server = start_pic_server(&config) ; // "/pic" 图传 
 
     // 返回http注册状态
     return server ;

@@ -44,6 +44,28 @@ esp_err_t get_req_handler(httpd_req_t *req)
     return err;
 }
 
+// 通用:请求注册函数
+httpd_handle_t Http_Event_Resister(const char *uri , httpd_method_t method , esp_err_t (*handler)(httpd_req_t *r) , httpd_config_t* config)
+{
+    // 服务函数
+    httpd_handle_t server = NULL ;
+
+    // 建立事件
+    httpd_uri_t uri_event = {
+        .uri = uri,
+        .method = method,             // 这表明web在请求HTML页面
+        .handler = handler,     // 当匹配到 uri + method 时，httpd 会调用这个函数
+        .user_ctx = NULL
+    };
+    // 注册事件
+    if (httpd_start(&server , config) == ESP_OK)
+    {
+        httpd_register_uri_handler(server , &uri_event) ;
+    }
+    // 返回http注册状态
+    return server ;
+}
+
 // ========================= POST请求处理 =========================
 
 // 暂时略
@@ -56,18 +78,8 @@ httpd_handle_t Http_Init(void)
     httpd_config_t config = HTTPD_DEFAULT_CONFIG() ;    // 使用默认的参数
     httpd_handle_t server = NULL ;                      // 服务句柄
 
-    // 处理web端的Get请求
-    httpd_uri_t uri_get = {
-        .uri = "/",
-        .method = HTTP_GET,             // 这表明web在请求HTML页面
-        .handler = get_req_handler,     // 当匹配到 uri + method 时，httpd 会调用这个函数
-        .user_ctx = NULL
-    };
-
-    if (httpd_start(&server , &config) == ESP_OK)
-    {
-        httpd_register_uri_handler(server , &uri_get) ;
-    }
+    // 处理请求端
+    server = Http_Event_Resister("/" , HTTP_GET , get_req_handler , &config) ;    // 1. "/" - GET - 数据更新
 
     // 返回http注册状态
     return server ;

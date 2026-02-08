@@ -4,6 +4,7 @@
 #include "camera_pin.h"
 
 #include <esp_system.h>
+#include "esp_http_server.h"
 #include <string.h>
 #include "stdio.h"
 
@@ -16,7 +17,7 @@ static void camera_sensor_adjust(void)
     // 得到摄像头型号,读取传感器ID
     sensor_t *s = esp_camera_sensor_get();  
     s->set_vflip(s, 1); // 翻转摄像头
-    ESP_LOGI("CAM", "PID: 0x%04X", s->id.PID);  // 打印型号
+    ESP_LOGI("CAM", "PID: 0x%02X", s->id.PID);  // 打印型号
     // 根据摄像头型号调整初始化参数
     if (s->id.PID == OV3660_PID) {
         s->set_brightness(s, 1); // up the blightness just a bit
@@ -71,7 +72,7 @@ esp_err_t Cam_Init(void)
         .frame_size = FRAMESIZE_QVGA,    // 图像大小
 
         .jpeg_quality = 30, // 0-63 lower means higher quality
-        .fb_count = 1,       // For ESP32/ESP32-S2, if more than one, i2s runs in continuous mode.
+        .fb_count = 2,       // For ESP32/ESP32-S2, if more than one, i2s runs in continuous mode.
         .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
         .fb_location = CAMERA_FB_IN_PSRAM
     };
@@ -100,3 +101,24 @@ void picture(void)
         esp_camera_fb_return(pic);
     }
 }
+
+// ========================== 网页图传 ==========================
+// esp_err_t start_pic_server()
+// {
+//     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+//     config.stack_size = 5120;
+
+//     httpd_uri_t pic_uri = {
+//         .uri = "/pic",
+//         .method = HTTP_GET,
+//         .handler = pic_get_handler,
+//         .user_ctx = NULL
+//     };
+
+//     ESP_LOGI(TAG, "Starting pic server on port: '%d'", config.server_port);
+//     if (httpd_start(&pic_httpd, &config) == ESP_OK) {
+//         httpd_register_uri_handler(pic_httpd, &pic_uri);
+//         return ESP_OK;
+//     }
+//     return ESP_FAIL;
+// }

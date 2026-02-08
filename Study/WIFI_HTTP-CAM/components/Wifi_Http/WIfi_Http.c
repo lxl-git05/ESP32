@@ -19,6 +19,7 @@
 
 extern float hum  ;
 extern float temp ;
+httpd_handle_t http_handle = NULL;
 
 // ========================= GET请求处理 =========================
 // 更新数据 , 发送web页面
@@ -46,11 +47,8 @@ esp_err_t get_req_handler(httpd_req_t *req)
 }
 
 // 通用:请求注册函数
-httpd_handle_t Http_Event_Resister(const char *uri , httpd_method_t method , esp_err_t (*handler)(httpd_req_t *r) , httpd_config_t* config)
+esp_err_t Http_Event_Resister(const char *uri , httpd_method_t method , esp_err_t (*handler)(httpd_req_t *r) , httpd_config_t* config)
 {
-    // 服务函数
-    httpd_handle_t server = NULL ;
-
     // 建立事件
     httpd_uri_t uri_event = {
         .uri = uri,
@@ -59,12 +57,7 @@ httpd_handle_t Http_Event_Resister(const char *uri , httpd_method_t method , esp
         .user_ctx = NULL
     };
     // 注册事件
-    if (httpd_start(&server , config) == ESP_OK)
-    {
-        httpd_register_uri_handler(server , &uri_event) ;
-    }
-    // 返回http注册状态
-    return server ;
+    return httpd_register_uri_handler(http_handle , &uri_event) ;
 }
 
 // ========================= POST请求处理 =========================
@@ -73,16 +66,18 @@ httpd_handle_t Http_Event_Resister(const char *uri , httpd_method_t method , esp
 
 // ========================= 初始化 =========================
 // 初始化HTTP协议
-httpd_handle_t Http_Init(void)
+esp_err_t Http_Init(void)
 {
     // 配置结构体
     httpd_config_t config = HTTPD_DEFAULT_CONFIG() ;    // 使用默认的参数
-    httpd_handle_t server = NULL ;                      // 服务句柄
+    // 注册端口
+    esp_err_t err = httpd_start(&http_handle , &config) ;
+    ESP_ERROR_CHECK(err) ;
 
     // 处理请求端,注意,1个端口只能含有一个处理
-    // server = Http_Event_Resister("/" , HTTP_GET , get_req_handler , &config) ;    // 1. "/" - GET - 数据更新
-    server = start_pic_server(&config) ; // "/pic" 图传 
+    Http_Event_Resister("/" , HTTP_GET , get_req_handler , &config) ;    // 1. "/" - GET - 数据更新
+    start_pic_server(&http_handle , &config) ; // "/pic" 图传 
 
     // 返回http注册状态
-    return server ;
+    return ESP_OK ;
 }

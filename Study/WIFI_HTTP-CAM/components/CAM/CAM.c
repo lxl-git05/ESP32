@@ -167,26 +167,17 @@ static esp_err_t pic_get_handler(httpd_req_t *req)
 }
 
 // ×¢²áÍ¼´«URI
-httpd_handle_t start_pic_server(httpd_config_t* config)
+esp_err_t start_pic_server(httpd_handle_t* handle , httpd_config_t* config)
 {
     // ÍøÒ³config
     config->stack_size = 5120;
-
-    // ÍøÒ³handle
-    httpd_handle_t pic_httpd_handle = NULL;
-
     // ×¢²áURI
     httpd_uri_t pic_uri = {
-        .uri = "/",
+        .uri = "/pic",
         .method = HTTP_GET,
         .handler = pic_get_handler,
         .user_ctx = NULL
     };
-
     ESP_LOGI(TAG, "Starting pic server on port: '%d'", config->server_port);
-    if (httpd_start(&pic_httpd_handle, config) == ESP_OK) 
-    {
-        httpd_register_uri_handler(pic_httpd_handle, &pic_uri);
-    }
-    return pic_httpd_handle;
+    return httpd_register_uri_handler(*handle, &pic_uri);
 }

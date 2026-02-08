@@ -4,6 +4,6 @@
 #include "esp_http_server.h"
 
 // 初始化HTTP协议
-httpd_handle_t Http_Init(void) ;
+esp_err_t Http_Init(void) ;
 
 #endif

@@ -12,5 +12,5 @@ esp_err_t Cam_Init(void) ;
 void picture(void);
 
 // ×¢²áÍ¼´«URI
-httpd_handle_t start_pic_server(httpd_config_t* config) ;
+esp_err_t start_pic_server(httpd_handle_t* handle , httpd_config_t* config) ;
 #endif

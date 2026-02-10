@@ -1,6 +1,7 @@
 #include "Initial.h"
-
 void print_FreeRtos_Task(void) ;
+
+QueueHandle_t Q_OLED_Data ;
 
 void task1(void *param)
 {
@@ -19,14 +20,16 @@ void task2(void *param)
 {
     // setup
     static int OLED_Num = 0 ;
-    TickType_t pretime = xTaskGetTickCount() ;
     while (1)
     {
-        OLED_ShowNum(0 , 0 , OLED_Num++ , 3 , OLED_8X16 ) ;
-        OLED_Update() ;
-        vTaskDelayUntil(&pretime , pdMS_TO_TICKS(1000)) ;
+        // 阻塞式等待
+        if (xQueueReceive(Q_OLED_Data , &OLED_Num , portMAX_DELAY))
+        {
+            // OLED_ShowNum(0 , 0 , OLED_Num , 3 , OLED_8X16 ) ;
+            // OLED_Update() ;
+            printf("%d\n" , OLED_Num) ;
+        }    
     }
-    
 }
 
 void app_main(void)
@@ -35,6 +38,13 @@ void app_main(void)
     // 建立任务
     xTaskCreatePinnedToCore(task1 , "Task1" , 4096 , NULL , 1 , NULL , 0) ;
     xTaskCreatePinnedToCore(task2 , "Task2" , 4096 , NULL , 1 , NULL , 0) ;
+    // 建立队列
+    Q_OLED_Data = xQueueCreate(5 , sizeof(int)) ;
+    if (Q_OLED_Data == NULL)
+    {
+        printf("Queue creation failed!\n");
+        return;
+    }
     
     while (1)
     {
@@ -47,6 +57,20 @@ void app_main(void)
         else if(Key_Check(KEY_0 , KEY_DOUBLE))
         {
             printf("Key0 Double\n") ;
+            Timer_Counter_Print() ;
+        }
+        else if (Key_Check(KEY_0 , KEY_LONG))
+        {
+            // 建立队列间数据
+            static int num = 0 ;
+            if (xQueueSend(Q_OLED_Data, &num, pdMS_TO_TICKS(10)) == pdPASS)
+            {
+                num++;
+            }
+            else
+            {
+                printf("Queue send timeout\n");
+            }
         }
         vTaskDelay(pdMS_TO_TICKS(10)) ;
     }
@@ -86,4 +110,8 @@ void print_FreeRtos_Task(void)
             cpu_usage ,
             taskStats[i].usStackHighWaterMark);
     }
+    // 顺手打印队列状态
+    printf("Queue: used=%d free=%d\n",
+    uxQueueMessagesWaiting(Q_OLED_Data),
+    uxQueueSpacesAvailable(Q_OLED_Data));
 }

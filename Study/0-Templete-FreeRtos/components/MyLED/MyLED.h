@@ -1,7 +1,7 @@
 #ifndef _MYLED_H_
 #define _MYLED_H_
 
-#define LED_GPIO_NUM GPIO_NUM_3
+#define LED_GPIO_NUM GPIO_NUM_21 // ∞Â‘ÿLED
 
 void LED_Init(void);
 

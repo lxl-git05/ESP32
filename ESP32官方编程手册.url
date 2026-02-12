@@ -2,4 +2,5 @@
 Prop3=19,11
 [InternetShortcut]
 IDList=
-URL=https://docs.espressif.com/projects/esp-idf/zh_CN/stable/esp32/api-reference/peripherals/index.html
+URL=https://docs.espressif.com/projects/esp-idf/zh_CN/v5.5.2/esp32s3/api-reference/peripherals/index.html
+HotKey=0

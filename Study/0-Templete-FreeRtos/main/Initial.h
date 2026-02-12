@@ -20,6 +20,7 @@
 #include "Timer.h"
 #include "Key.h"
 #include "PWM.h"
+#include "ADC.h"
 #include "MPU6050.h"
 #include "MPU6050_Angle.h"
 

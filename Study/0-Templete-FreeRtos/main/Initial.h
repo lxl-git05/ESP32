@@ -27,6 +27,8 @@
 
 
 // ================= 全局声明 =================
+// 初始化外设
 void Initial(void) ;
-
+// 打印FreeRtos参数
+void print_FreeRtos_Task(void) ;
 #endif

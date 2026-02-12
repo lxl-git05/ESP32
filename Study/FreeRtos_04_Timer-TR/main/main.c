@@ -1,5 +1,7 @@
 #include "Initial.h"
 
+TimerHandle_t Timer1 ;
+
 void task1(void *param)
 {
     while (1)
@@ -8,7 +10,6 @@ void task1(void *param)
         vTaskDelay(pdMS_TO_TICKS(500)) ;
         LED_OFF() ;
         vTaskDelay(pdMS_TO_TICKS(500)) ;
-
     }
 }
 
@@ -21,6 +22,12 @@ void task2(void *param)
     }
 }
 
+void Timer1_cb(TimerHandle_t xTimer) 
+{
+    Timer_Counter_Func() ;
+    printf("Timer_cb\n") ;
+}
+
 void app_main(void)
 {
     Initial() ;
@@ -29,7 +36,17 @@ void app_main(void)
     // 建立任务
     xTaskCreatePinnedToCore(task1 , "Task1" , 4096 , NULL , 1 , NULL , 0) ;
     xTaskCreatePinnedToCore(task2 , "Task2" , 4096 , NULL , 1 , NULL , 0) ;
-    
+    // 建立中断
+    Timer1 = xTimerCreate("Timer1" , pdMS_TO_TICKS(1000) , pdTRUE , 0 , Timer1_cb ) ;
+    if (Timer1 == NULL)
+    {
+        printf("Timer creation failed!\n");
+    }
+    else
+    {
+        printf("Starting timer...\n");
+        xTimerStart(Timer1, 0);
+    }
     while (1)
     {
         // 按键

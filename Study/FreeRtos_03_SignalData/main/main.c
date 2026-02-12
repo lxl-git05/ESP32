@@ -1,7 +1,11 @@
 #include "Initial.h"
 void print_FreeRtos_Task(void) ;
 
+#define Bits(x) (1 << (x))  // 位运算
+
 SemaphoreHandle_t LED_Flag;
+SemaphoreHandle_t Shared_Mutex ;
+EventGroupHandle_t sensorGroup ;
 
 void task1(void *param)
 {
@@ -26,20 +30,129 @@ void task2(void *param)
     }
 }
 
+void LowTask(void *param )
+{
+    printf("LOW TASK BUILD\n") ;
+    while(1)
+    {
+        if (xSemaphoreTake(Shared_Mutex , portMAX_DELAY))
+        {
+            printf("LowPriorityTask: Holding shared resource  current priority: %u\n", uxTaskPriorityGet(NULL));
+            vTaskDelay(pdMS_TO_TICKS(2000)); // Simulate long operation,高任务阻塞时没有优先继承,只有高任务就绪的时候才会给低优先级进行优先继承
+            printf("LowPriorityTask: Releasing shared resource  current priority: %u\n", uxTaskPriorityGet(NULL));
+            xSemaphoreGive(Shared_Mutex);   // 有take 就有 give 
+        }
+        vTaskDelay(pdMS_TO_TICKS(1000)) ;
+    }
+
+}
+
+void MidTask(void *param)
+{
+    printf("MID TASK BUILD\n") ;
+    while (1)
+    {
+        printf("Mid TASK:\n\n") ;
+        printf("MediumPriorityTask: Doing background work\n");
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+}
+
+void HighTask(void *param)
+{
+    printf("HIGH TASK BUILD\n") ;
+    while (1)
+    {
+        vTaskDelay(pdMS_TO_TICKS(1000)); // Let low task grab mutex first
+
+        printf("HighPriorityTask: Needs shared resource\n");
+        if (xSemaphoreTake(Shared_Mutex, portMAX_DELAY))
+        {
+            printf("HighPriorityTask: Got shared resource\n");
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            printf("HighPriorityTask: Releasing shared resource\n");
+            xSemaphoreGive(Shared_Mutex);
+        }
+    }
+}
+
+void Group1(void *param)
+{
+    while (1)
+    {
+        printf("Sensor1 Working\n") ;
+        vTaskDelay(pdMS_TO_TICKS(2000)) ;
+        printf("Sensor1 OK\n") ;
+        xEventGroupSetBits(sensorGroup , Bits(0)) ;
+        vTaskDelay(pdMS_TO_TICKS(2000)) ;
+    }
+}
+
+void Group2(void *param)
+{
+    while (1)
+    {
+        printf("Sensor2 WOrking\n") ;
+        vTaskDelay(pdMS_TO_TICKS(500)) ;
+        printf("Sensor2 OK\n") ;
+        xEventGroupSetBits(sensorGroup , Bits(1)) ;
+        vTaskDelay(pdMS_TO_TICKS(2000)) ;
+    }
+    
+}
+
+void Group12(void *param)
+{
+    while (1)
+    {
+        printf("Processing Task: Waiting for both sensors...\n");
+        xEventGroupWaitBits(sensorGroup , Bits(0) | Bits(1) , pdTRUE , pdTRUE , portMAX_DELAY) ;
+        printf("Group1 and Group2 ALL OK , Begin TASK3 \n") ;
+        vTaskDelay(pdMS_TO_TICKS(3000)) ;
+        printf("ALL OK \n") ;
+        vTaskDelay(pdMS_TO_TICKS(3000)) ;
+    }
+}
+
+
 void app_main(void)
 {
     Initial() ;
     // 建立信息
-    LED_Flag = xSemaphoreCreateBinary() ;
+    LED_Flag = xSemaphoreCreateBinary() ;       // 二值量: app_main task2
     if (LED_Flag == NULL)
     {
         printf("Failed to create semaphore!\n") ;
         return ;
     }
-
+    Shared_Mutex = xSemaphoreCreateMutex() ;    // 互斥锁: LowTask , MidTask , HighTask
+    if (Shared_Mutex == NULL)
+    {
+        printf("Failed to create Mutex!\n") ;
+        return ;
+    }
+    sensorGroup = xEventGroupCreate() ;
+    if (sensorGroup == NULL)
+    {
+        printf("Failed to create Group!\n") ;
+        return ;
+    }
     // 建立任务
-    xTaskCreatePinnedToCore(task1 , "Task1" , 4096 , NULL , 1 , NULL , 0) ;
+    xTaskCreatePinnedToCore(task1 , "Task1" , 4096 , NULL , 1 , NULL , 0) ; // LED灯
+
+    // 二值信号任务
     xTaskCreatePinnedToCore(task2 , "Task2" , 4096 , NULL , 1 , NULL , 0) ;
+
+    // 互斥锁任务
+    // Priorities: High > Medium > Low
+    // xTaskCreatePinnedToCore(LowTask, "LowPriority", 2048, NULL, 1, NULL, 1);
+    // xTaskCreatePinnedToCore(MidTask, "MediumPriority", 2048, NULL, 2, NULL, 1);
+    // xTaskCreatePinnedToCore(HighTask, "HighPriority", 2048, NULL, 3, NULL, 1);
+
+    // 事件组任务
+    // xTaskCreatePinnedToCore(Group1, "Group1"  , 2048, NULL, 2, NULL, 1);
+    // xTaskCreatePinnedToCore(Group2, "Group2"  , 2048, NULL, 2, NULL, 1);
+    // xTaskCreatePinnedToCore(Group12, "Group12", 2048, NULL, 2, NULL, 1);
     
     while (1)
     {

@@ -5,11 +5,14 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#define ADC_GPIO_NUM 2  
-#define ADC_Channel ADC_CHANNEL_1   // ADC_CHANNEL_1 GPIO2 - D1
+// =============== 数据层 ===============
 
 #define ADC_Debug
+#define ADC_GPIO_NUM 2  
+#define ADC_Channel ADC_CHANNEL_1   // ADC_CHANNEL_1 GPIO2 - D1
 extern int gray_data ;
+
+// =============== 数据层 ===============
 
 // ADC数据初始化
 void adc_init(void) ;

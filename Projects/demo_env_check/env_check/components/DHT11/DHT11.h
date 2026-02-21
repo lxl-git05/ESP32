@@ -5,13 +5,16 @@
 #include "freertos/task.h"
 #include "driver/gpio.h" 
  
-#define DHT_Debug
+// =============== 数据层 ===============
 
+#define DHT_Debug
 /* 引脚定义 */
 #define DHT11_DQ_GPIO_PIN       GPIO_NUM_3      // D2引脚
- 
 extern uint8_t temp ;  // 温度
 extern uint8_t humi ;  // 湿度
+
+// =============== 数据层end ===============
+
 
 /* DHT11引脚高低电平枚举 */
 typedef enum 
@@ -34,5 +37,7 @@ void dht11_reset(void);                                 /* 复位DHT11 */
 uint8_t dht11_init(void);                               /* 初始化DHT11 */
 uint8_t dht11_check(void);                              /* 等待DHT11的回应 */
 uint8_t dht11_read_data(uint8_t *temp,uint8_t *humi);   /* 读取温湿度 */
+
+
 void dht11_task_tick(uint16_t vtaskdelay_ms) ;          /* 任务执行函数 */
 #endif

@@ -1,10 +1,5 @@
 #include "I2C.h"
 
-// IIC总线配置
-#define I2C_PORT    I2C_NUM_0
-#define I2C_SCL    	GPIO_NUM_1
-#define I2C_SDA    	GPIO_NUM_2
-
 //I2C总线句柄
 i2c_master_bus_handle_t i2c_bus_handle;
 

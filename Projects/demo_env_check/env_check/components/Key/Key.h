@@ -5,7 +5,7 @@
 #include "stdint.h"         // uint8_t需要
 
 // 按键GPIO(GPIOx和Dx不同,一定要记得!!!)
-#define Key_0_GPIO_PIN GPIO_NUM_4
+#define Key_0_GPIO_PIN GPIO_NUM_1   // D0
 
 // ================ 按键状态检测相关宏定义 ================
 #define KEY_COUNT				4

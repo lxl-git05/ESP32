@@ -1,38 +1,12 @@
-#include "Initial.h"
-
-void task1(void *param)
-{
-    while (1)
-    {
-        LED_On() ;
-        vTaskDelay(pdMS_TO_TICKS(500)) ;
-        LED_OFF() ;
-        vTaskDelay(pdMS_TO_TICKS(500)) ;
-    }
-}
-
-void Task_DHT11(void *param)
-{
-    // 1000ms执行一次
-    dht11_task_tick(1000) ;
-}
-
-void Task_ADC(void *param)
-{
-    // 1000ms执行一次
-    gray_task_tick(1000) ;
-}
+#include "MyTask.h"
 
 void app_main(void)
 {
-    Initial() ;
+    main_Initial() ;
     // 创建通信道路,记得验证是否为NULL
-
+    Msg_Create() ;
     // 创建任务,RX属性在前,TX属性在后
-    xTaskCreatePinnedToCore(task1 , "Task1" , 4096 , NULL , 1 , NULL , 0) ;
-    // xTaskCreatePinnedToCore(Task_DHT11 , "Task_DHT11" , 3072 , NULL , 1 , NULL , 0) ;
-    xTaskCreatePinnedToCore(Task_ADC , "Task_ADC" , 2048 , NULL , 1 , NULL , 0) ;
-
+    Task_Create() ;
     while (1)
     {
         // 按键
@@ -49,8 +23,7 @@ void app_main(void)
         else if(Key_Check(KEY_0 , KEY_LONG))
         {
             printf("Key0 LONG\n") ;
-            
-        }
+        }    
         vTaskDelay(pdMS_TO_TICKS(10)) ;
     }
 }

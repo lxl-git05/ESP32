@@ -1,5 +1,5 @@
-#ifndef __INITIAL_H__
-#define __INITIAL_H__   
+#ifndef __INITIAL_H
+#define __INITIAL_H
 
 // 系统层
 #include <stdio.h>
@@ -21,17 +21,11 @@
 #include "Key.h"
 #include "PWM.h"
 #include "ADC.h"
+
 #include "MPU6050.h"
 #include "MPU6050_Angle.h"
-
 #include "DHT11.h"
 
 // WIFI模块
 
-
-// ================= 全局声明 =================
-// 初始化外设
-void Initial(void) ;
-// 打印FreeRtos参数
-void print_FreeRtos_Task(void) ;
 #endif

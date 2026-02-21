@@ -162,6 +162,8 @@ uint8_t dht11_init(void)
     return dht11_check();
 }
 
+// ====================== 外部任务 ======================
+
 uint8_t temp = 0 ;  // 温度
 uint8_t humi = 0 ;  // 湿度
 

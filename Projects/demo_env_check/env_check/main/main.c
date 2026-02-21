@@ -17,6 +17,12 @@ void Task_DHT11(void *param)
     dht11_task_tick(1000) ;
 }
 
+void Task_ADC(void *param)
+{
+    // 1000ms执行一次
+    gray_task_tick(1000) ;
+}
+
 void app_main(void)
 {
     Initial() ;
@@ -24,8 +30,9 @@ void app_main(void)
 
     // 创建任务,RX属性在前,TX属性在后
     xTaskCreatePinnedToCore(task1 , "Task1" , 4096 , NULL , 1 , NULL , 0) ;
-    xTaskCreatePinnedToCore(Task_DHT11 , "Task_DHT11" , 3072 , NULL , 1 , NULL , 0) ;
-    // xTaskCreatePinnedToCore
+    // xTaskCreatePinnedToCore(Task_DHT11 , "Task_DHT11" , 3072 , NULL , 1 , NULL , 0) ;
+    xTaskCreatePinnedToCore(Task_ADC , "Task_ADC" , 2048 , NULL , 1 , NULL , 0) ;
+
     while (1)
     {
         // 按键

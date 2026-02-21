@@ -1,5 +1,4 @@
 #include "ADC.h"
-
 #include "esp_err.h"
 
 adc_oneshot_unit_handle_t adc_handle;
@@ -28,4 +27,23 @@ void  ADC_Read_Raw(int *ADC_Data)
     esp_err_t err ;
     err = adc_oneshot_read(adc_handle , ADC_Channel , ADC_Data) ;
     ESP_ERROR_CHECK(err) ;
+}
+
+// ====================== 外部任务 ======================
+
+int gray_data = 0 ;
+// 任务:ADC灰度读取
+void gray_task_tick(uint16_t vtaskdelay_ms)
+{
+    // setup
+    adc_init();
+    // loop
+    while (1)   // 96us
+    {   
+        ADC_Read_Raw(&gray_data) ;
+        #ifdef ADC_Debug
+        printf("ADC : %d\n" , gray_data) ;
+        #endif
+        vTaskDelay(pdMS_TO_TICKS(vtaskdelay_ms)) ;
+    }
 }

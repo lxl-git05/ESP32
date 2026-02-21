@@ -3,8 +3,8 @@
 // ====================== 全局变量 ======================
 typedef struct 
 {
-    int temp ;      // 温度
-    int humi ;      // 湿度
+    uint8_t temp ;      // 温度
+    uint8_t humi ;      // 湿度
     float light ;   // 光强
     // 陀螺仪数据
 	float	AccX ;	// 加速度x 
@@ -83,7 +83,7 @@ void Msg_Create(void)
 
 // ====================== 外部任务 ======================= 
 
-// =========== Task0: LED闪烁 ============ 
+// =========== Task0: LED闪烁(1000ms) ============ 
 void task1(void *param)
 {
     while (1)
@@ -95,18 +95,62 @@ void task1(void *param)
     }
 }
 
-// =========== Task1: DHT11温湿度读取 ============ 
+// =========== Task1: DHT11温湿度读取(1000ms) ============ 
 void Task_DHT11(void *param)
 {
-    // 1000ms执行一次
-    dht11_task_tick(1000) ;
+    // setup
+    while(dht11_init())
+	{
+		printf("DHT11 Enable Error! Please Check Lines\r\n");
+		vTaskDelay(pdMS_TO_TICKS(500));
+	}
+	printf("DHT11 Enable OK!\r\n");
+    // 数据读取
+    uint8_t temp = 0 ;
+    uint8_t humi = 0 ;
+    dht11_read_data(&temp, &humi);  // 第一次读取数据值不准确
+    vTaskDelay(pdMS_TO_TICKS(10)) ;
+    TickType_t lastWakeTime = xTaskGetTickCount();
+    while (1) 
+    {
+        dht11_read_data(&temp, &humi);   /* 读取温湿度值 */
+        if (xSemaphoreTake(data_Mutex , portMAX_DELAY))
+        {
+            Sensor_Data.temp = temp ;
+            Sensor_Data.humi = humi ;
+            xSemaphoreGive(data_Mutex) ;
+        }
+        #ifdef DHT_Debug
+        printf("\ntemp:%d degree\n",temp);
+        printf("humi:%d%%\n",humi);
+        #endif
+        vTaskDelayUntil(&lastWakeTime, pdMS_TO_TICKS(1000));
+    }  
 }
 
-// =========== Task2: 灰度传感器数据读取 ============ 
-void Task_ADC(void *param)
+// =========== Task2: 灰度传感器数据读取(1000ms) ============ 
+void Task_Gray(void *param)
 {
-    // 1000ms执行一次
-    gray_task_tick(1000) ;
+    // setup
+    ADC_Gray_Init() ;
+    TickType_t lastWakeTime = xTaskGetTickCount();
+    int dht_data = 0 ;
+    // loop
+    while (1) // 500us完成一次
+    {
+        // 数据读取
+        ADC_Get_Gray(&dht_data) ;
+        // 数据写入
+        if (xSemaphoreTake(data_Mutex , portMAX_DELAY))
+        {
+            Sensor_Data.light = dht_data * 1.0 / 4095 ; // 灰度:0-1
+            #ifdef ADC_Debug
+            printf("Gray Data = %.2f , int = %d \n" , Sensor_Data.light , dht_data) ;
+            #endif
+            xSemaphoreGive(data_Mutex) ;
+        }
+        vTaskDelayUntil(&lastWakeTime, pdMS_TO_TICKS(1000));
+    }
 }
 
 // =========== Task3: OLED数据显示 ============ 
@@ -158,6 +202,13 @@ void Task_MPU(void *param)
     } 
 }
 
+// =========== Task5: 四按键模块数据读取 ============ 
+void Task_Key4(void *param)
+{
+    // setup: ADC初始化
+    
+}
+
 // ====================== 函数调度控制器 ======================= 
 
 void Task_Create(void)
@@ -165,7 +216,8 @@ void Task_Create(void)
     // 创建任务,RX属性在前,TX属性在后
     xTaskCreatePinnedToCore(task1 , "Task1" , 4096 , NULL , 1 , NULL , 0) ;
     xTaskCreatePinnedToCore(Task_OLED , "Task_OLED" , 4096 , NULL , 1 , NULL , 0) ;
+    // xTaskCreatePinnedToCore(Task_Key4  , "Task_Key4" , 4096 , NULL , 1 , NULL , 0) ;
     // xTaskCreatePinnedToCore(Task_MPU , "Task_MPU" , 4096 , NULL , 1 , NULL , 0) ;
-    // xTaskCreatePinnedToCore(Task_DHT11 , "Task_DHT11" , 3072 , NULL , 1 , NULL , 0) ;
-    // xTaskCreatePinnedToCore(Task_ADC , "Task_ADC" , 2048 , NULL , 1 , NULL , 0) ;
+    xTaskCreatePinnedToCore(Task_DHT11 , "Task_DHT11" , 3072 , NULL , 1 , NULL , 0) ;
+    xTaskCreatePinnedToCore(Task_Gray , "Task_Gray" , 2048 , NULL , 1 , NULL , 0) ;
 }

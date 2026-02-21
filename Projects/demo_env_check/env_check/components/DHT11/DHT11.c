@@ -161,37 +161,3 @@ uint8_t dht11_init(void)
     dht11_reset();
     return dht11_check();
 }
-
-// ====================== 外部任务 ======================
-
-uint8_t temp = 0 ;  // 温度
-uint8_t humi = 0 ;  // 湿度
-
-void dht11_task_tick(uint16_t vtaskdelay_ms)
-{
-    // setup
-    static int dht_cnt = 0 ;
-    while(dht11_init())
-	{
-		printf("DHT11 Enable Error! Please Check Lines\r\n");
-		vTaskDelay(pdMS_TO_TICKS(500));
-	}
-	printf("DHT11 Enable OK!\r\n");
-    // 先读取一遍数据(第一次的数据不准确)
-    dht11_read_data(&temp, &humi);
-    vTaskDelay(pdMS_TO_TICKS(vtaskdelay_ms)) ;
-    while (1) 
-    {
-        dht_cnt++;
-        if ((dht_cnt % (1000 / vtaskdelay_ms)) == 0)              /* 每1s更新一次显示数据 */
-        {
-            dht_cnt = 0 ;
-            dht11_read_data(&temp, &humi);   /* 读取温湿度值 */
-            #ifdef DHT_Debug
-			printf("\ntemp:%d degree\n",temp);
-            printf("humi:%d%%\n",humi);
-            #endif
-        }
-        vTaskDelay(pdMS_TO_TICKS(vtaskdelay_ms)) ;
-    }
-}

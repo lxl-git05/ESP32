@@ -24,6 +24,8 @@
 #include "MPU6050.h"
 #include "MPU6050_Angle.h"
 
+#include "DHT11.h"
+
 // WIFIÄ£¿é
 
 

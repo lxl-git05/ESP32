@@ -11,6 +11,12 @@ void task1(void *param)
     }
 }
 
+void Task_DHT11(void *param)
+{
+    // 1000ms执行一次
+    dht11_task_tick(1000) ;
+}
+
 void app_main(void)
 {
     Initial() ;
@@ -18,6 +24,7 @@ void app_main(void)
 
     // 创建任务,RX属性在前,TX属性在后
     xTaskCreatePinnedToCore(task1 , "Task1" , 4096 , NULL , 1 , NULL , 0) ;
+    xTaskCreatePinnedToCore(Task_DHT11 , "Task_DHT11" , 3072 , NULL , 1 , NULL , 0) ;
     // xTaskCreatePinnedToCore
     while (1)
     {

@@ -26,7 +26,7 @@ typedef struct
 	
 	float	GyroErrorX ;	// 角速度误差 
 	float	GyroErrorY ;	// 角速度误差
-	float GyroErrorZ ;	// 角速度误差
+	float 	GyroErrorZ ;	// 角速度误差
 }ImuOffset_Typedef;
 
 // 得到的零偏纠正值

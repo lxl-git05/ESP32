@@ -18,6 +18,8 @@ typedef struct
 }Sensor_Data_Typedef;
 
 Sensor_Data_Typedef Sensor_Data ;
+Sensor_Data_Typedef Sensor_Data_copy ;   // Sensor_Data的复制体,用于数据读取
+uint8_t key_Status = 0 ;
 SemaphoreHandle_t data_Mutex = NULL ;    // 全局数据共享互斥锁
 SemaphoreHandle_t I2C_Mutex  = NULL ;    // IIC资源互斥锁
 
@@ -26,7 +28,6 @@ void main_Initial(void)
 {
     // 一般外设初始化
     LED_Init();
-    Key_Init();
 
     // 互斥锁设备初始化
     OLED_Init();
@@ -163,11 +164,21 @@ void Task_OLED(void *param)
     {
         if (xSemaphoreTake(I2C_Mutex , portMAX_DELAY))
         {
-            static int oled_check = 0 ;
-            OLED_ShowNum(0 , 0 , oled_check++ , 6 , OLED_8X16);
-            OLED_Update() ; // 耗时:27ms
+            if (xSemaphoreTake(data_Mutex , portMAX_DELAY))
+            {
+                Sensor_Data_copy = Sensor_Data ;
+                xSemaphoreGive(data_Mutex) ;
+            }
+            
+            OLED_Printf(0 ,  0 , OLED_6X8 , "Ax:%.2f  roll:%.2f" , 
+                       Sensor_Data_copy.AccX  , Sensor_Data_copy.roll) ;
+            OLED_Printf(0 , 20 , OLED_6X8 , "Ay:%.2f pitch:%.2f" ,
+                       Sensor_Data_copy.AccY  , Sensor_Data_copy.pitch) ;
+            OLED_Printf(0 , 40 , OLED_6X8 , "Az:%.2f   yaw:%.2f" , 
+                       Sensor_Data_copy.AccZ  , Sensor_Data_copy.yaw) ;
 
             // 尾处理
+            OLED_Update() ; // 耗时:27ms
             xSemaphoreGive(I2C_Mutex) ;
         }
         vTaskDelay(pdMS_TO_TICKS(100)) ;
@@ -179,26 +190,39 @@ void Task_MPU(void *param)
 {
     // setup
     // 存在互斥锁,所以在全局里面顺序进行初始化
+    MPU_Offset.AccErrorX  = 0.0927990749f ;
+    MPU_Offset.AccErrorY  = -0.0469766855f;
+    MPU_Offset.AccErrorZ  = 0.00974702835f;
+    MPU_Offset.GyroErrorX = -2.07370448f  ;
+    MPU_Offset.GyroErrorY = 1.26626182f   ;
+    MPU_Offset.GyroErrorZ = 0.0725877061f ;
+    #define MPU_Delay_time_ms 25    // MPU6050采样时间(ms)
     // loop
     while (1)
     {
+        Timer_Counter_Func() ;
         if (xSemaphoreTake(I2C_Mutex , portMAX_DELAY))
         {
-            Timer_Counter_Func() ;
-            Timer_Counter_Begin() ;
-
+            // 三项总共550us
             MPU6050_Update_Data() ; // 470 us
 
-            Timer_Counter_End() ;
+            MPU6050_Raw_Error_Update() ;
 
-            // printf("MPU data :\nAx\tAy\tAz\n %.2f\t%.2f\t%.2f\nGx\tGy\tGz\n %.2f\t%.2f\t%.2f\n" , 
-            //       MPU_Raw_Data.AX , MPU_Raw_Data.AY , MPU_Raw_Data.AZ , 
-            //       MPU_Raw_Data.GX , MPU_Raw_Data.GY , MPU_Raw_Data.GZ) ;
-    
+            MPU6050_Raw_Deal(MPU_Delay_time_ms) ;
+            if (xSemaphoreTake(data_Mutex , portMAX_DELAY))
+            {
+                Sensor_Data.AccX = MPU_Real.AccX ;
+                Sensor_Data.AccY = MPU_Real.AccY ;
+                Sensor_Data.AccZ = MPU_Real.AccZ ;
+                Sensor_Data.roll = MPU_Real.roll ;
+                Sensor_Data.pitch= MPU_Real.pitch;
+                Sensor_Data.yaw  = MPU_Real.yaw  ;
+                xSemaphoreGive(data_Mutex) ;
+            }
             // 尾处理
             xSemaphoreGive(I2C_Mutex) ;
         }
-        vTaskDelay(pdMS_TO_TICKS(20)) ;
+        vTaskDelay(pdMS_TO_TICKS(MPU_Delay_time_ms)) ;
     } 
 }
 
@@ -206,7 +230,36 @@ void Task_MPU(void *param)
 void Task_Key4(void *param)
 {
     // setup: ADC初始化
-    
+    ADC_Key_Init() ;
+    int key_data = 0 ;
+    while (1)
+    {
+        Timer_Counter_Begin() ;
+        ADC_Get_Key(&key_data) ;
+        Timer_Counter_End() ;
+        if (key_data > 3000)
+        {
+            key_Status = 4 ;
+        }
+        else if (key_data > 2600 && key_data < 3000)
+        {
+            key_Status = 3 ;
+        }
+        else if (key_data > 2300 && key_data < 2600)
+        {
+            key_Status = 2 ;
+        }
+        else if (key_data > 2000 && key_data < 2250)
+        {
+            key_Status = 1 ;
+        }
+        else 
+        {
+            key_Status = 0 ;
+        }     
+        printf("key_status = %d\n" , key_Status) ;
+        vTaskDelay(pdMS_TO_TICKS(20)) ;
+    }
 }
 
 // ====================== 函数调度控制器 ======================= 
@@ -216,8 +269,8 @@ void Task_Create(void)
     // 创建任务,RX属性在前,TX属性在后
     xTaskCreatePinnedToCore(task1 , "Task1" , 4096 , NULL , 1 , NULL , 0) ;
     xTaskCreatePinnedToCore(Task_OLED , "Task_OLED" , 4096 , NULL , 1 , NULL , 0) ;
-    // xTaskCreatePinnedToCore(Task_Key4  , "Task_Key4" , 4096 , NULL , 1 , NULL , 0) ;
-    // xTaskCreatePinnedToCore(Task_MPU , "Task_MPU" , 4096 , NULL , 1 , NULL , 0) ;
-    xTaskCreatePinnedToCore(Task_DHT11 , "Task_DHT11" , 3072 , NULL , 1 , NULL , 0) ;
+    xTaskCreatePinnedToCore(Task_Key4 , "Task_Key4" , 4096 , NULL , 1 , NULL , 0) ;
+    xTaskCreatePinnedToCore(Task_MPU  , "Task_MPU" , 4096 , NULL , 1 , NULL , 0) ;
+    xTaskCreatePinnedToCore(Task_DHT11, "Task_DHT11" , 3072 , NULL , 1 , NULL , 0) ;
     xTaskCreatePinnedToCore(Task_Gray , "Task_Gray" , 2048 , NULL , 1 , NULL , 0) ;
 }

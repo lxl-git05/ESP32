@@ -16,10 +16,10 @@ void ADC_Get_Gray(int *Gray_Data)
 // 4°´¼ü´«¸ÐÆ÷
 void ADC_Key_Init(void)
 {
-    adc_init(Gray_Channel) ;
+    adc_init(Key_Channel) ;
 }
 
 void ADC_Get_Key(int *Gray_Data)
 {
-    ADC_Read_Raw(Gray_Data , Gray_Channel) ;
+    ADC_Read_Raw(Gray_Data , Key_Channel) ;
 }

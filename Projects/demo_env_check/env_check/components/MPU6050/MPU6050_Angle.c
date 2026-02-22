@@ -147,3 +147,43 @@ void MPU6050_Raw_Deal(int Deal_dt_ms)
 	MPU_Real.AccY = MPU_Cali.AY ;
 	MPU_Real.AccZ = MPU_Cali.AZ ;
 }
+
+// =========== Task: MPU6050数据读取(25ms)s ============ 
+void Task_MPU(void *param)
+{
+    // setup
+    // 存在互斥锁,所以在全局里面顺序进行初始化
+    MPU_Offset.AccErrorX  = 0.0927990749f ;
+    MPU_Offset.AccErrorY  = -0.0469766855f;
+    MPU_Offset.AccErrorZ  = 0.00974702835f;
+    MPU_Offset.GyroErrorX = -2.07370448f  ;
+    MPU_Offset.GyroErrorY = 1.26626182f   ;
+    MPU_Offset.GyroErrorZ = 0.0725877061f ;
+    #define MPU_Delay_time_ms 25    // MPU6050采样时间(ms)
+    // loop
+    while (1)
+    {
+        if (xSemaphoreTake(I2C_Mutex , portMAX_DELAY))
+        {
+            // 三项总共550us
+            MPU6050_Update_Data() ; // 470 us
+
+            MPU6050_Raw_Error_Update() ;
+
+            MPU6050_Raw_Deal(MPU_Delay_time_ms) ;
+            if (xSemaphoreTake(data_Mutex , portMAX_DELAY))
+            {
+                Sensor_Data.AccX = MPU_Real.AccX ;
+                Sensor_Data.AccY = MPU_Real.AccY ;
+                Sensor_Data.AccZ = MPU_Real.AccZ ;
+                Sensor_Data.roll = MPU_Real.roll ;
+                Sensor_Data.pitch= MPU_Real.pitch;
+                Sensor_Data.yaw  = MPU_Real.yaw  ;
+                xSemaphoreGive(data_Mutex) ;
+            }
+            // 尾处理
+            xSemaphoreGive(I2C_Mutex) ;
+        }
+        vTaskDelay(pdMS_TO_TICKS(MPU_Delay_time_ms)) ;
+    } 
+}

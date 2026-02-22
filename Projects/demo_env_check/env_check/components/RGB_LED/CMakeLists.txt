@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "Key.c"
+    SRCS "RGB_LED.c"
     INCLUDE_DIRS "."
     REQUIRES driver
 )

@@ -161,3 +161,36 @@ uint8_t dht11_init(void)
     dht11_reset();
     return dht11_check();
 }
+
+// =========== Task1: DHT11温湿度读取(1000ms) ============ 
+void Task_DHT11(void *param)
+{
+    // setup
+    while(dht11_init())
+	{
+		printf("DHT11 Enable Error! Please Check Lines\r\n");
+		vTaskDelay(pdMS_TO_TICKS(500));
+	}
+	printf("DHT11 Enable OK!\r\n");
+    // 数据读取
+    uint8_t temp = 0 ;
+    uint8_t humi = 0 ;
+    dht11_read_data(&temp, &humi);  // 第一次读取数据值不准确
+    vTaskDelay(pdMS_TO_TICKS(10)) ;
+    TickType_t lastWakeTime = xTaskGetTickCount();
+    while (1) 
+    {
+        dht11_read_data(&temp, &humi);   /* 读取温湿度值 */
+        if (xSemaphoreTake(data_Mutex , portMAX_DELAY))
+        {
+            Sensor_Data.temp = temp ;
+            Sensor_Data.humi = humi ;
+            xSemaphoreGive(data_Mutex) ;
+        }
+        #ifdef DHT_Debug
+        printf("\ntemp:%d degree\n",temp);
+        printf("humi:%d%%\n",humi);
+        #endif
+        vTaskDelayUntil(&lastWakeTime, pdMS_TO_TICKS(1000));
+    }  
+}

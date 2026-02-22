@@ -10,20 +10,22 @@ void app_main(void)
     while (1)
     {
         // 按键
-        if(Key_Check(KEY_0 , KEY_SINGLE))
+        if (Key_4_Get_Status() == KEY_1_Single)
         {
-            printf("Key0 Single\n") ;
-            print_FreeRtos_Task() ;         // 打印FreeRtos任务执行参数
+            printf("Key1\n") ;
+            print_FreeRtos_Task() ;
         }
-        else if(Key_Check(KEY_0 , KEY_DOUBLE))
+        else if (Key_4_Get_Status() == KEY_2_Single)
         {
-            printf("Key0 Double\n") ;
-            Timer_Counter_Print() ;         // 打印计时参数
+            printf("Key1\n") ;
+            Timer_Counter_Print() ;
         }
-        else if(Key_Check(KEY_0 , KEY_LONG))
+        else if (Key_4_Get_Status() == KEY_3_Single)
         {
-            printf("Key0 LONG\n") ;
-        }    
+            RGB_LED_Set(0,0,1) ;
+        }
+        
+        
         vTaskDelay(pdMS_TO_TICKS(10)) ;
     }
 }
@@ -32,7 +34,6 @@ void app_main(void)
 void Timer_Callback_1ms(void)
 {
     // 功能1:Key更新
-    Key_Tick() ;
 }
 
 

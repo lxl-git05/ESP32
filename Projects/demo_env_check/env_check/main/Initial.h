@@ -8,6 +8,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "Msg.h"
+
 // ¹¤¾ß²ã
 #include "Timer_Counter.h"
 
@@ -18,13 +20,14 @@
 #include "MyLED.h"
 #include "OLED.h"
 #include "Timer.h"
-#include "Key.h"
 #include "PWM.h"
-#include "ADC_App.h"
+#include "Key_4.h"
+#include "Gray.h"
 
 #include "MPU6050.h"
 #include "MPU6050_Angle.h"
 #include "DHT11.h"
+#include "RGB_LED.h"
 
 // WIFIÄ£¿é
 

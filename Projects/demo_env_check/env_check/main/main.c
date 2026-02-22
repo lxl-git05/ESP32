@@ -22,10 +22,19 @@ void app_main(void)
         }
         else if (Key_4_Get_Status() == KEY_3_Single)
         {
-            RGB_LED_Set(0,0,1) ;
+            // RGB_LED_Set(0,0,1) ;
         }
-        
-        
+        else if (Key_4_Get_Status() == KEY_4_Single)
+        {
+            // static uint16_t buzzer_PWM = 0 ;
+            // static int add = 1 ;
+            // Buzzer_Set_duty_1024(buzzer_PWM) ;
+            // buzzer_PWM += add ;
+            // if (buzzer_PWM >= 1024 || buzzer_PWM <= 0)
+            // {
+            //     add = -add ;
+            // }
+        }
         vTaskDelay(pdMS_TO_TICKS(10)) ;
     }
 }

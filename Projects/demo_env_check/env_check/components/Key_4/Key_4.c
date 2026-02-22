@@ -33,9 +33,7 @@ void Task_Key4(void *param)
     int key_data = 0 ;
     while (1)
     {
-        Timer_Counter_Begin() ;
         Key_4_Get(&key_data) ;
-        Timer_Counter_End() ;
         if (key_data > 3000)
         {
             Key_Status = KEY_4_Single ;

@@ -1,8 +1,5 @@
 #include "PWM.h"
 
-#define PWM_GPIO_PIN_0  GPIO_NUM_5
-#define PWM_GPIO_PIN_1  GPIO_NUM_6
-
 void PWM_Single_Init(int gpio_num , ledc_channel_t channel)
 {
     // 定时器TIM初始化
@@ -28,15 +25,10 @@ void PWM_Single_Init(int gpio_num , ledc_channel_t channel)
         .timer_sel = LEDC_TIMER_0 ,
     };
     ledc_channel_config(&channel_cfg) ;
-}
 
-void PWM_Init(void)
-{
     // fade初始化,使得PWM变化平滑
     ledc_fade_func_install(0);  // 0 表示不分配专用内存
-    // PWM初始化
-    PWM_Single_Init(PWM_GPIO_PIN_0 , PWM_Channel_0);
-    PWM_Single_Init(PWM_GPIO_PIN_1 , PWM_Channel_1);
+
 }
 
 void PWM_Set_Duty_1024(int duty , int PWM_Channel)

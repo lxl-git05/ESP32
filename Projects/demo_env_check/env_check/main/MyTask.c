@@ -7,10 +7,11 @@ void main_Initial(void)
 {
     // 一般外设初始化
     LED_Init();
-    RGB_LED_Init() ;
+    // RGB_LED_Init() ;
+    // Buzzer_Init() ;
     // 互斥锁设备初始化
     OLED_Init();
-    MPU6050_Init() ;
+    // MPU6050_Init() ; // 暂时不需要
     // 定时器最后初始化
     Timer_Init();
 }
@@ -78,12 +79,14 @@ void Task_OLED(void *param)
                 xSemaphoreGive(data_Mutex) ;
             }
             
-            OLED_Printf(0 ,  0 , OLED_6X8 , "Ax:%.2f  roll:%.2f" , 
-                       Sensor_Data_copy.AccX  , Sensor_Data_copy.roll) ;
-            OLED_Printf(0 , 20 , OLED_6X8 , "Ay:%.2f pitch:%.2f" ,
-                       Sensor_Data_copy.AccY  , Sensor_Data_copy.pitch) ;
-            OLED_Printf(0 , 40 , OLED_6X8 , "Az:%.2f   yaw:%.2f" , 
-                       Sensor_Data_copy.AccZ  , Sensor_Data_copy.yaw) ;
+            // OLED_Printf(0 ,  0 , OLED_6X8 , "Ax:%.2f  roll:%.2f" , 
+            //            Sensor_Data_copy.AccX  , Sensor_Data_copy.roll) ;
+            // OLED_Printf(0 , 20 , OLED_6X8 , "Ay:%.2f pitch:%.2f" ,
+            //            Sensor_Data_copy.AccY  , Sensor_Data_copy.pitch) ;
+            // OLED_Printf(0 , 40 , OLED_6X8 , "Az:%.2f   yaw:%.2f" , 
+            //            Sensor_Data_copy.AccZ  , Sensor_Data_copy.yaw) ;
+            static int num = 0 ;
+            OLED_ShowNum(0 , 0 , num++ , 3 , OLED_8X16 ) ;
 
             // 尾处理
             OLED_Update() ; // 耗时:27ms
@@ -101,7 +104,8 @@ void Task_Create(void)
     xTaskCreatePinnedToCore(task1 , "Task1" , 4096 , NULL , 1 , NULL , 0) ;
     xTaskCreatePinnedToCore(Task_OLED , "Task_OLED" , 4096 , NULL , 1 , NULL , 0) ;
     xTaskCreatePinnedToCore(Task_Key4 , "Task_Key4" , 4096 , NULL , 1 , NULL , 0) ;
-    xTaskCreatePinnedToCore(Task_MPU  , "Task_MPU" , 4096 , NULL , 1 , NULL , 0) ;
-    // xTaskCreatePinnedToCore(Task_DHT11, "Task_DHT11" , 3072 , NULL , 1 , NULL , 0) ;
+    // 以后再记录振动
+    // xTaskCreatePinnedToCore(Task_MPU  , "Task_MPU" , 4096 , NULL , 1 , NULL , 0) ;   
+    xTaskCreatePinnedToCore(Task_DHT11, "Task_DHT11" , 3072 , NULL , 1 , NULL , 0) ;
     xTaskCreatePinnedToCore(Task_Gray , "Task_Gray" , 4096 , NULL , 1 , NULL , 0) ;
 }

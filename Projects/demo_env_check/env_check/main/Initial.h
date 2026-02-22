@@ -28,6 +28,7 @@
 #include "MPU6050_Angle.h"
 #include "DHT11.h"
 #include "RGB_LED.h"
+#include "Buzzer.h"
 
 // WIFIÄ£¿é
 

@@ -1,4 +1,37 @@
 #include "MyTask.h"
+#include "ai_model.h"
+float temp = 23.5f;   // 温度
+float humi = 55.0f;   // 湿度
+float gray = 0.18f;   // 光照灰度
+int risk_level = 0;
+void test(void *param)
+{
+    ai_model_init();
+    printf(" ai_model_init() OK\n");
+    while (1)
+    {
+        risk_level = ai_predict_level(temp, humi, gray);
+        switch (risk_level)
+        {
+            case 0:
+                printf("LOW\n");
+                break;
+            case 1:
+                printf("Mid\n");
+                break;
+            case 2:
+                printf("HIGH\n");
+                break;
+            default:
+                printf("No\n");
+                break;
+        }
+        temp += 1 ;
+        humi -= 1 ;
+        printf("temp %f , humi %f , gray %f \n" , temp , humi , gray) ;
+        vTaskDelay(pdMS_TO_TICKS(1000)) ;
+    }
+}
 
 void app_main(void)
 {
@@ -7,6 +40,8 @@ void app_main(void)
     Msg_Create() ;
     // 创建任务,RX属性在前,TX属性在后
     Task_Create() ;
+    xTaskCreatePinnedToCore(test , "test" , 4096 , NULL , 1 , NULL , 0) ;
+
     while (1)
     {
         // 按键

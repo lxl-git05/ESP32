@@ -1,5 +1,5 @@
 #include "MyTask.h"
-
+// #include "ai_model.h"
 uint8_t key_Status = 0 ;
 
 // ====================== 必备函数 ======================
@@ -96,6 +96,37 @@ void Task_OLED(void *param)
     }
 }
 
+
+
+// void test(void *param)
+// {
+//     ai_model_init();
+//     printf(" ai_model_init() OK\n");
+//     while (1)
+//     {
+//         risk_level = ai_predict_level(temp, humi, gray);
+//         switch (risk_level)
+//         {
+//             case 0:
+//                 printf("LOW\n");
+//                 break;
+//             case 1:
+//                 printf("Mid\n");
+//                 break;
+//             case 2:
+//                 printf("HIGH\n");
+//                 break;
+//             default:
+//                 printf("No\n");
+//                 break;
+//         }
+//         temp += 1 ;
+//         humi -= 1 ;
+//         printf("temp %f , humi %f , gray %f \n" , temp , humi , gray) ;
+//         vTaskDelay(pdMS_TO_TICKS(1000)) ;
+//     }
+// }
+
 // ====================== 函数调度控制器 ======================= 
 
 void Task_Create(void)
@@ -108,4 +139,6 @@ void Task_Create(void)
     // xTaskCreatePinnedToCore(Task_MPU  , "Task_MPU" , 4096 , NULL , 1 , NULL , 0) ;   
     xTaskCreatePinnedToCore(Task_DHT11, "Task_DHT11" , 3072 , NULL , 1 , NULL , 0) ;
     xTaskCreatePinnedToCore(Task_Gray , "Task_Gray" , 4096 , NULL , 1 , NULL , 0) ;
+
+    // xTaskCreatePinnedToCore(test , "test" , 4096 , NULL , 1 , NULL , 0) ;
 }

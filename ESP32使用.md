@@ -22,6 +22,24 @@
 
 * 然后就可以构建项目并且烧录程序了
 
+
+
+## 1-2 工程迁移(版本更改)
+
+* 由于迁移了文件,所以第一次打开旧文件需要设置tool的使用:
+
+<img src="ESP32使用.assets/image-20260305001257949.png" alt="image-20260305001257949" style="zoom:50%;" />
+
+- 结果:
+
+![image-20260305001321428](ESP32使用.assets/image-20260305001321428.png)
+
++ 然后就能使用命令行了嘿嘿
+
+
+
+
+
 ## 2. 引入文件
 
 * main层:CMakeLists.txt保持原样
@@ -79,6 +97,10 @@ void led_init(void)
 // 这里就不需要使用位掩码了
 gpio_set_level(GPIO_NUM_2, led_level);
 ```
+
+
+
+
 
 
 

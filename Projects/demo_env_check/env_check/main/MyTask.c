@@ -1,4 +1,5 @@
 #include "MyTask.h"
+#include "ai_model.h"
 
 uint8_t key_Status = 0 ;
 
@@ -98,6 +99,33 @@ void Task_OLED(void *param)
 
 // ====================== 函数调度控制器 ======================= 
 
+void AI_Predict(void*param)
+{
+    Ai_Init() ;
+    static float temp = 20.0f ; // 20-26
+    static float humi = 68.0f ; // 40-60
+    static float gray = 0.03f ; // 0-0.3
+
+    while (1)
+    {
+        temp += 2.0f  ;
+        humi -= 2.0f  ;
+        gray += 0.07f ;
+
+        if(temp > 40.0f) temp = 40.0f;
+        if(temp < 10.0f) temp = 10.0f;
+
+        if(humi > 90.0f) humi = 90.0f;
+        if(humi < 20.0f) humi = 20.0f;
+
+        if(gray > 1.0f) gray = 1.0f;
+        if(gray < 0.0f) gray = 0.0f;
+        
+        Ai_Predict(temp, humi, gray);
+        vTaskDelay(pdMS_TO_TICKS(1000)) ;
+    }
+}
+
 void Task_Create(void)
 {
     // 创建任务,RX属性在前,TX属性在后
@@ -108,4 +136,5 @@ void Task_Create(void)
     // xTaskCreatePinnedToCore(Task_MPU  , "Task_MPU" , 4096 , NULL , 1 , NULL , 0) ;   
     xTaskCreatePinnedToCore(Task_DHT11, "Task_DHT11" , 3072 , NULL , 1 , NULL , 0) ;
     xTaskCreatePinnedToCore(Task_Gray , "Task_Gray" , 4096 , NULL , 1 , NULL , 0) ;
+    xTaskCreatePinnedToCore(AI_Predict , "AI_Predict" , 4096 , NULL , 1 , NULL , 0) ;
 }

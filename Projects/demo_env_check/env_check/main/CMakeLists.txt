@@ -1,2 +1,2 @@
-idf_component_register(SRCS "MyTask.c" "main.c"
+idf_component_register(SRCS "model.cc" "ai_model.cpp" "MyTask.c" "main.c"
                     INCLUDE_DIRS ".")

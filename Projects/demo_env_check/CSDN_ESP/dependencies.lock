@@ -29,7 +29,6 @@ dependencies:
     version: 5.5.2
 direct_dependencies:
 - espressif/esp-tflite-micro
-- idf
-manifest_hash: bfe4762094556ae49d7fee4e9f0a0c7632228fdda9bbbb8d92d8d593d176ad94
+manifest_hash: cde8dae00d38eef8cec787ab91f748b0cd5f0ccb4615189e6b7265ecee0d3022
 target: esp32s3
 version: 2.0.0

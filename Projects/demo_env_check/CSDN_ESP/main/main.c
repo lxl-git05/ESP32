@@ -1,4 +1,5 @@
 #include "Initial.h"
+#include "ai_model.h"
 
 void task1(void *param)
 {
@@ -13,6 +14,7 @@ void task1(void *param)
 
 void app_main(void)
 {
+    Ai_Init() ;
     // 初始化先看OLED等以及引脚是否配置正确
     Initial() ;
     // 创建通信道路,记得验证是否为NULL
@@ -24,6 +26,13 @@ void app_main(void)
     {
         static int num = 0 ;
         printf("%d\n" , num ++) ;
+        static float test = 0.0f ;
+        test += 0.1f ;
+        Ai_Predict(test) ;
+        if (test >= 2 * 3.14 - 2)
+        {
+            test = 0.0f ;
+        }
         // 按键
         if(Key_Check(KEY_0 , KEY_SINGLE))
         {

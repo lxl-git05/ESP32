@@ -17,7 +17,7 @@ TfLiteTensor* input = nullptr;
 TfLiteTensor* output = nullptr;
 int inference_count = 0;  // 记录已经做了多少次推理,可删 // 可改
 
-constexpr int kTensorArenaSize = 2000;  // 如果模型大了，这个值(内存区域)要增大 // 可改
+constexpr int kTensorArenaSize = 20 * 1024;  // 如果模型大了，这个值(内存区域)要增大 // 可改
 uint8_t tensor_arena[kTensorArenaSize];
 }  // namespace
 
@@ -51,7 +51,10 @@ void Ai_Init(void)
   // ======================= 改动区域 =======================
   // Pull in only the operation implementations we need.
   // 换模型时,如果模型中有其他操作(如 Conv2D、ReLU),这里要 AddConv2D(),AddRelu() 等
-  static tflite::MicroMutableOpResolver<1> resolver;  // 可改,新模型可能需要卷积、激活函数、池化等操作，需要在这里全部注册，否则解释器会报错 op not supported。
+  static tflite::MicroMutableOpResolver<2> resolver;  // 可改,新模型可能需要卷积、激活函数、池化等操作，需要在这里全部注册，否则解释器会报错 op not supported,反正是看有几个(不是几种)模型就注册几个
+  // 改
+  resolver.AddRelu();    // 如果模型有 relu
+  // resolver.AddTanh();    // 如果模型有 tanh
   if (resolver.AddFullyConnected() != kTfLiteOk) // 可改 , 可增
   {
     return;
@@ -84,45 +87,73 @@ void Ai_Init(void)
 // ============== AI模型loop =============== 
 
 // The name of this function is important for Arduino compatibility.
-float  Ai_Predict(float x) 
+// float  Ai_Predict(float x)   // 含量化版
+// {
+//   // // 可改: 输入输出维度不同,那么input->data量化也需要改
+//   // 量化参数
+//   // Quantize the input from floating-point to integer
+//   int8_t x_quantized = x / input->params.scale + input->params.zero_point;
+//   // Place the quantized input in the model's input tensor
+//   input->data.int8[0] = x_quantized;
+
+
+//   // 执行推理
+//   // Run inference, and report any error
+//   TfLiteStatus invoke_status = interpreter->Invoke();
+//   if (invoke_status != kTfLiteOk) 
+//   {
+//     MicroPrintf("Invoke failed on x: %f\n",
+//                          static_cast<double>(x));
+//     return 0 ;
+//   }
+
+//   // 获取输出
+//   // Obtain the quantized output from model's output tensor
+//   int8_t y_quantized = output->data.int8[0];
+//   // Dequantize the output from integer to floating-point
+//   float y = (y_quantized - output->params.zero_point) * output->params.scale; // 量化值 -> 浮点数
+
+//   // 打印结果
+//   // Output the results. A custom HandleOutput function can be implemented
+//   // for each supported hardware target.
+//   HandleOutput(x, y);
+
+//   // Increment the inference_counter, and reset it if we have reached
+//   // the total number per cycle
+//   inference_count += 1;
+//   if (inference_count >= kInferencesPerCycle) inference_count = 0;
+
+//   return y ;
+// }
+
+float Ai_Predict(float x) // py不含量化版
 {
-  // // 可改: 输入输出维度不同,那么input->data量化也需要改
-  // 量化参数
-  // Quantize the input from floating-point to integer
-  int8_t x_quantized = x / input->params.scale + input->params.zero_point;
-  // Place the quantized input in the model's input tensor
-  input->data.int8[0] = x_quantized;
+  // ---------------- 输入 ----------------
+  // FP32 模型直接写入 float
+  input->data.f[0] = x;
 
-
-  // 执行推理
-  // Run inference, and report any error
+  // ---------------- 推理 ----------------
   TfLiteStatus invoke_status = interpreter->Invoke();
   if (invoke_status != kTfLiteOk) 
   {
-    MicroPrintf("Invoke failed on x: %f\n",
-                         static_cast<double>(x));
-    return 0 ;
+    MicroPrintf("Invoke failed on x: %f\n", static_cast<double>(x));
+    return 0.0f;
   }
 
-  // 获取输出
-  // Obtain the quantized output from model's output tensor
-  int8_t y_quantized = output->data.int8[0];
-  // Dequantize the output from integer to floating-point
-  float y = (y_quantized - output->params.zero_point) * output->params.scale; // 量化值 -> 浮点数
+  // ---------------- 输出 ----------------
+  // FP32 模型直接读取 float
+  float y = output->data.f[0];
 
   // 打印结果
-  // Output the results. A custom HandleOutput function can be implemented
-  // for each supported hardware target.
   HandleOutput(x, y);
 
-  // Increment the inference_counter, and reset it if we have reached
-  // the total number per cycle
+  // ---------------- 循环计数 ----------------
   inference_count += 1;
-  if (inference_count >= kInferencesPerCycle) inference_count = 0;
+  if (inference_count >= kInferencesPerCycle) 
+      inference_count = 0;
 
-  return y ;
+  return y;
 }
-
 
 void Ai_Predict_test(void)  // 原汁原味的原函数
 {

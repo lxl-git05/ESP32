@@ -13,6 +13,7 @@ void task1(void *param)
 
 void app_main(void)
 {
+    // 初始化先看OLED等以及引脚是否配置正确
     Initial() ;
     // 创建通信道路,记得验证是否为NULL
 
@@ -21,7 +22,8 @@ void app_main(void)
     // xTaskCreatePinnedToCore
     while (1)
     {
-        printf("Hello/n") ;
+        static int num = 0 ;
+        printf("%d\n" , num ++) ;
         // 按键
         if(Key_Check(KEY_0 , KEY_SINGLE))
         {
@@ -38,7 +40,7 @@ void app_main(void)
             printf("Key0 LONG\n") ;
             
         }
-        vTaskDelay(pdMS_TO_TICKS(10)) ;
+        vTaskDelay(pdMS_TO_TICKS(100)) ;
     }
 }
 

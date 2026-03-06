@@ -5,7 +5,7 @@
 #include "Timer_Counter.h"
 
 // #define Key_Debug
-Key_Status_Typedef Key_S ;
+Key_Status_Typedef Key_S ;  // 按键状态
 
 // ====================== 外部任务 ======================
 
@@ -37,7 +37,6 @@ void Task_Key4(void *param)
 
     int key_data = 0;
     Key_Status_Typedef Key_Status ;
-    Key_Status_Typedef last_status = Key_NULL;   // 上一次状态
     uint8_t key_lock = 0;
 
     while (1)

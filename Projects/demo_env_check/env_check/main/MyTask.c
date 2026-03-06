@@ -107,4 +107,5 @@ void Task_Create(void)
     // xTaskCreatePinnedToCore(Task_MPU  , "Task_MPU" , 4096 , NULL , 1 , NULL , 0) ;   
     xTaskCreatePinnedToCore(Task_DHT11, "Task_DHT11" , 3072 , NULL , 1 , NULL , 0) ;
     xTaskCreatePinnedToCore(Task_Gray , "Task_Gray" , 4096 , NULL , 1 , NULL , 0) ;
+    xTaskCreatePinnedToCore(Task_History_Save , "Task_H_Save" , 4096 , NULL , 1 , NULL , 0) ;
 }

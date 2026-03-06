@@ -90,7 +90,7 @@ void Enter_Menu(void)
 }
 
 // 主菜单显示
-void OLED_Show_MainMenu()
+void OLED_Show_MainMenu(void)
 {
     OLED_Clear();
 
@@ -109,20 +109,54 @@ void OLED_Show_Realtime(void)
 {
     OLED_Clear();
 
-    float temp = 20.0f ;
-    float humi = 40.0f ;
-    float Gray = 0.03f ;
+    char buf[20];
+
+    sprintf(buf,"Temp: %.2f",Sensor_History[history_head].temp);
+    OLED_ShowString(0,0,buf,OLED_6X8);
+
+    sprintf(buf,"Humi: %.2f%%",Sensor_History[history_head].humi);
+    OLED_ShowString(0,16,buf,OLED_6X8);
+
+    sprintf(buf,"Light: %.2f",Sensor_History[history_head].Gray);
+    OLED_ShowString(0,32,buf,OLED_6X8);
+
+    OLED_Update();
+}
+
+// 风险显示界面
+void OLED_Show_Risk(void)
+{
+    OLED_Clear();
 
     char buf[20];
 
-    sprintf(buf,"Temp: %.1f",temp);
+    sprintf(buf,"Risk: %.2f",Sensor_History[history_head].risk);
+    OLED_ShowString(0,0,buf,OLED_8X16);
+
+    OLED_Update();
+}
+
+// 展示历史数据(滚动展示)
+void OLED_Show_History(void)
+{
+    OLED_Clear();
+
+    char buf[20];
+
+    static uint8_t check_index = -1 ;
+    check_index = (history_head+1) % HISTORY_NUM ;
+
+    sprintf(buf,"Temp: %.2f",Sensor_History[check_index].temp);
     OLED_ShowString(0,0,buf,OLED_6X8);
 
-    sprintf(buf,"Humi: %.1f",humi);
+    sprintf(buf,"Humi: %.2f%%",Sensor_History[check_index].humi);
     OLED_ShowString(0,16,buf,OLED_6X8);
 
-    sprintf(buf,"Light: %.1f",Gray);
+    sprintf(buf,"Light: %.2f",Sensor_History[check_index].Gray);
     OLED_ShowString(0,32,buf,OLED_6X8);
+
+    sprintf(buf,"Risk: %.2f",Sensor_History[check_index].risk);
+    OLED_ShowString(0,48,buf,OLED_6X8);
 
     OLED_Update();
 }
@@ -130,7 +164,7 @@ void OLED_Show_Realtime(void)
 // ======================= OLED菜单任务 =======================
 void Task_Menu(void *param)
 {
-    // OLED_Init(); // 已经自己初始化了
+    // OLED_Init(); // 已经在main初始化了
 
     while(1)
     {
@@ -143,18 +177,15 @@ void Task_Menu(void *param)
                 break;
 
             case MENU_REALTIME:
-                // OLED_Show_Realtime(temp,hum,light);
-                printf("MENU_REALTIME\n") ;
+                OLED_Show_Realtime();
                 break;
 
             case MENU_RISK:
-                // OLED_Show_Risk();
-                printf("MENU_RISK\n") ;
+                OLED_Show_Risk();
                 break;
 
             case MENU_HISTORY:
-                // OLED_Show_History();
-                printf("MENU_HISTORY\n") ;
+                OLED_Show_History();
                 break;
 
             case MENU_SETTING:

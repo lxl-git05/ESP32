@@ -187,6 +187,7 @@ void Task_DHT11(void *param)
             Sensor_Data.humi = humi ;
             xSemaphoreGive(data_Mutex) ;
         }
+        xEventGroupSetBits(sensorEventGroup, Temp_Humi_Bit);// Œª‘ÀÀ„
         #ifdef DHT_Debug
         printf("\ntemp:%d degree\n",temp);
         printf("humi:%d%%\n",humi);

@@ -30,6 +30,7 @@
 #include "DHT11.h"
 #include "RGB_LED.h"
 #include "Buzzer.h"
+#include "ai_model.h"
 
 // WIFIÄ£¿é
 

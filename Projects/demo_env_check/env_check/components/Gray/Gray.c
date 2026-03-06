@@ -4,7 +4,7 @@
 #include "freertos/task.h"
 #include "Msg.h"
 
-#define Gray_Debug
+// #define Gray_Debug
 
 // 灰度传感器初始化
 void Gray_Init(void)

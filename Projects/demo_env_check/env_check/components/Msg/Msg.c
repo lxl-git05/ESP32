@@ -39,7 +39,7 @@ void Task_History_Save(void* param)
 {
     while (1)
     {
-        xEventGroupWaitBits(sensorEventGroup, Temp_Humi_Bit | Gray_Bit ,    // 暂时省略AI模型
+        xEventGroupWaitBits(sensorEventGroup, Temp_Humi_Bit | Gray_Bit | AI_Risk_Bit,
                         pdTRUE, // Clear bits after waiting
                         pdTRUE, // Wait for both bits 
                         portMAX_DELAY);
@@ -54,6 +54,8 @@ void Task_History_Save(void* param)
             history_head = 0;
 
         xSemaphoreGive(data_Mutex);
+
+        printf("History Update: history_head = %d\n",history_head) ;
 
         vTaskDelay(pdMS_TO_TICKS(100)) ;
     }

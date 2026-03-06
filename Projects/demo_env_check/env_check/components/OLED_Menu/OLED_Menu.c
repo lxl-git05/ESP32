@@ -2,8 +2,11 @@
 #include "OLED.h"
 #include "Key_4.h"
 #include "Msg.h"
+#include "Timer_Counter.h"
 
 #include <stdio.h>
+#include "stdbool.h"
+#include <esp_log.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -94,14 +97,15 @@ void OLED_Show_MainMenu(void)
 {
     OLED_Clear();
 
-    OLED_ShowString(0,0,"MENU",OLED_8X16);
-
+    OLED_ShowString(0,0,"===MENU===",OLED_8X16);
     OLED_ShowString(0,16, menu_index==0 ? ">Realtime" : " Realtime", OLED_6X8);
     OLED_ShowString(0,26, menu_index==1 ? ">Risk" : " Risk", OLED_6X8);
     OLED_ShowString(0,36, menu_index==2 ? ">History" : " History", OLED_6X8);
     OLED_ShowString(0,46, menu_index==3 ? ">Setting" : " Setting", OLED_6X8);
 
+    xSemaphoreTake(I2C_Mutex , portMAX_DELAY) ;
     OLED_Update();
+    xSemaphoreGive(I2C_Mutex) ;
 }
 
 // 数据显示界面
@@ -120,7 +124,9 @@ void OLED_Show_Realtime(void)
     sprintf(buf,"Light: %.2f",Sensor_History[history_head].Gray);
     OLED_ShowString(0,32,buf,OLED_6X8);
 
+    xSemaphoreTake(I2C_Mutex , portMAX_DELAY) ;
     OLED_Update();
+    xSemaphoreGive(I2C_Mutex) ;
 }
 
 // 风险显示界面
@@ -133,7 +139,9 @@ void OLED_Show_Risk(void)
     sprintf(buf,"Risk: %.2f",Sensor_History[history_head].risk);
     OLED_ShowString(0,0,buf,OLED_8X16);
 
+    xSemaphoreTake(I2C_Mutex , portMAX_DELAY) ;
     OLED_Update();
+    xSemaphoreGive(I2C_Mutex) ;
 }
 
 // 展示历史数据(滚动展示)
@@ -158,14 +166,21 @@ void OLED_Show_History(void)
     sprintf(buf,"Risk: %.2f",Sensor_History[check_index].risk);
     OLED_ShowString(0,48,buf,OLED_6X8);
 
+    xSemaphoreTake(I2C_Mutex , portMAX_DELAY) ;
     OLED_Update();
+    xSemaphoreGive(I2C_Mutex) ;
+}
+
+// 进行一些其他操作
+void OLED_Show_Setting(void)
+{
+    // 展示任务序列时间间隔
+    Timer_Counter_Print() ;
 }
 
 // ======================= OLED菜单任务 =======================
 void Task_Menu(void *param)
 {
-    // OLED_Init(); // 已经在main初始化了
-
     while(1)
     {
         Menu_Key_Handle(Key_4_Get_Status()) ;
@@ -189,13 +204,11 @@ void Task_Menu(void *param)
                 break;
 
             case MENU_SETTING:
-                // OLED_Show_Setting();
-                printf("MENU_SETTING\n") ;
+                OLED_Show_Setting();
+                current_menu = MENU_MAIN ;  // 展示完参数就回到主界面
                 break;
         }
 
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
-
-

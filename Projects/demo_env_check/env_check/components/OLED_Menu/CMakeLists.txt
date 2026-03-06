@@ -1,3 +1,3 @@
 idf_component_register(SRCS "OLED_Menu.c"
                     INCLUDE_DIRS "."
-                    REQUIRES driver Msg OLED Key_4)
+                    REQUIRES driver Msg OLED Key_4 tool_Timer_Counter)

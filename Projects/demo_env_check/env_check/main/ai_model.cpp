@@ -27,7 +27,7 @@ uint8_t tensor_arena[kTensorArenaSize];
 // ============== 函数 ==============
 void HandleOutput(float temp, float humi, float gray, float risk_score)
 {
-    MicroPrintf("T:%.2f H:%.2f L:%.2f Risk:%.1f\n", temp, humi, gray, risk_score);
+    MicroPrintf("T:%.2f H:%.2f L:%.2f Risk:%.2f\n", temp, humi, gray, risk_score);
 }
 
 // ============== AI模型初始化 =============== 

@@ -102,6 +102,7 @@ float Ai_Predict(float temp , float humi , float gray) // py不含量化版
   // ---------------- 输出 ----------------
   // FP32 模型直接读取 float
   float y = output->data.f[0];
+  if (y < 0.0f) y = 0.0f;        // 不允许负数
 
   // 打印结果
   HandleOutput(temp , humi , gray , y );

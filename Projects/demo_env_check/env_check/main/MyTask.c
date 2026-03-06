@@ -57,15 +57,22 @@ void task_LED(void *param)
 // =========== Task: AI模型风险预测 ============ 
 void Task_AI_Predict(void*param)
 {
+    // AI模型初始化
     Ai_Init() ;
-
+    
+    // AI预测模型
     while (1)
-    {
+    {   
         float risk = Ai_Predict(Sensor_History[history_head].temp, 
         Sensor_History[history_head].humi, Sensor_History[history_head].Gray);
 
         if (xSemaphoreTake(data_Mutex , portMAX_DELAY))
         {
+            // 本次数据的结果表明DHT11还在初始化中,所以risk清零
+            if (Sensor_History[history_head].temp < 0.1f && Sensor_History[history_head].humi < 0.1f)
+            {
+                risk = 0.0f ;
+            }
             Sensor_Data.risk = risk ;
             xSemaphoreGive(data_Mutex) ;
         }
@@ -83,7 +90,6 @@ void Task_RGY_Buzzer(void*param)
     static float risk_current ;
     while (1)
     {
-        printf("OK\n");
         // 数据读取
         static float risk_last = 0.0f ;
         if (xSemaphoreTake(data_Mutex , portMAX_DELAY))
@@ -91,7 +97,7 @@ void Task_RGY_Buzzer(void*param)
             risk_current = Sensor_Data.risk ;
             xSemaphoreGive(data_Mutex) ;
         }
-
+    
         // 一般情况下是绿色
         if (risk_current < 1.0f && risk_current > 0)
         {
@@ -127,7 +133,7 @@ void Task_RGY_Buzzer(void*param)
 
         risk_last = risk_current ;  // 更新risk
 
-        vTaskDelay(pdMS_TO_TICKS(1000)) ;  
+        vTaskDelay(pdMS_TO_TICKS(100)) ;  
     }
 }
 

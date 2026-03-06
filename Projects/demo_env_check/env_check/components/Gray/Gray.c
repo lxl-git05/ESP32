@@ -33,12 +33,14 @@ void Task_Gray(void *param)
         // 数据写入
         if (xSemaphoreTake(data_Mutex , portMAX_DELAY))
         {
-            Sensor_Data.light = dht_data * 1.0 / 4095 ; // 灰度:0-1
+            Sensor_Data.Gray = dht_data * 1.0 / 4095 ; // 灰度:0-1
             #ifdef Gray_Debug
-            printf("Gray Data = %.2f , int = %d \n" , Sensor_Data.light , dht_data) ;
+            printf("Gray Data = %.2f , int = %d \n" , Sensor_Data.Gray , dht_data) ;
             #endif
             xSemaphoreGive(data_Mutex) ;
         }
+        // 标志位
+        xEventGroupSetBits(sensorEventGroup, Gray_Bit);// 标志位
         vTaskDelayUntil(&lastWakeTime, pdMS_TO_TICKS(1000));
     }
 }

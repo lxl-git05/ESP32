@@ -19,6 +19,7 @@
 // ÍâÉèÄ£¿é
 #include "MyLED.h"
 #include "OLED.h"
+#include "OLED_Menu.h"
 #include "Timer.h"
 #include "PWM.h"
 #include "Key_4.h"

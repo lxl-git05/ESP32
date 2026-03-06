@@ -85,8 +85,6 @@ void Task_OLED(void *param)
             //            Sensor_Data_copy.AccY  , Sensor_Data_copy.pitch) ;
             // OLED_Printf(0 , 40 , OLED_6X8 , "Az:%.2f   yaw:%.2f" , 
             //            Sensor_Data_copy.AccZ  , Sensor_Data_copy.yaw) ;
-            static int num = 0 ;
-            OLED_ShowNum(0 , 0 , num++ , 3 , OLED_8X16 ) ;
 
             // 尾处理
             OLED_Update() ; // 耗时:27ms
@@ -103,6 +101,7 @@ void Task_Create(void)
     // 创建任务,RX属性在前,TX属性在后
     xTaskCreatePinnedToCore(task1 , "Task1" , 4096 , NULL , 1 , NULL , 0) ;
     xTaskCreatePinnedToCore(Task_OLED , "Task_OLED" , 4096 , NULL , 1 , NULL , 0) ;
+    xTaskCreatePinnedToCore(Task_Menu , "Task_Menu" , 4096 , NULL , 1 , NULL , 0) ;
     xTaskCreatePinnedToCore(Task_Key4 , "Task_Key4" , 4096 , NULL , 1 , NULL , 0) ;
     // 以后再记录振动
     // xTaskCreatePinnedToCore(Task_MPU  , "Task_MPU" , 4096 , NULL , 1 , NULL , 0) ;   

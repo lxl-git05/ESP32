@@ -1,37 +1,4 @@
 #include "MyTask.h"
-#include "ai_model.h"
-float temp = 23.5f;   // 温度
-float humi = 55.0f;   // 湿度
-float gray = 0.18f;   // 光照灰度
-int risk_level = 0;
-void test(void *param)
-{
-    ai_model_init();
-    printf(" ai_model_init() OK\n");
-    while (1)
-    {
-        risk_level = ai_predict_level(temp, humi, gray);
-        switch (risk_level)
-        {
-            case 0:
-                printf("LOW\n");
-                break;
-            case 1:
-                printf("Mid\n");
-                break;
-            case 2:
-                printf("HIGH\n");
-                break;
-            default:
-                printf("No\n");
-                break;
-        }
-        temp += 1 ;
-        humi -= 1 ;
-        printf("temp %f , humi %f , gray %f \n" , temp , humi , gray) ;
-        vTaskDelay(pdMS_TO_TICKS(1000)) ;
-    }
-}
 
 void app_main(void)
 {
@@ -40,38 +7,9 @@ void app_main(void)
     Msg_Create() ;
     // 创建任务,RX属性在前,TX属性在后
     Task_Create() ;
-    xTaskCreatePinnedToCore(test , "test" , 4096 , NULL , 1 , NULL , 0) ;
 
     while (1)
     {
-        /*
-        // 按键
-        if (Key_4_Get_Status() == KEY_1_Single)
-        {
-            printf("Key1\n") ;
-            print_FreeRtos_Task() ;
-        }
-        else if (Key_4_Get_Status() == KEY_2_Single)
-        {
-            printf("Key1\n") ;
-            Timer_Counter_Print() ;
-        }
-        else if (Key_4_Get_Status() == KEY_3_Single)
-        {
-            // RGB_LED_Set(0,0,1) ;
-        }
-        else if (Key_4_Get_Status() == KEY_4_Single)
-        {
-            // static uint16_t buzzer_PWM = 0 ;
-            // static int add = 1 ;
-            // Buzzer_Set_duty_1024(buzzer_PWM) ;
-            // buzzer_PWM += add ;
-            // if (buzzer_PWM >= 1024 || buzzer_PWM <= 0)
-            // {
-            //     add = -add ;
-            // }
-        }
-        */
         vTaskDelay(pdMS_TO_TICKS(10)) ;
     }
 }

@@ -1,17 +1,12 @@
 #include "MyTask.h"
-// #include "ai_model.h"
-uint8_t key_Status = 0 ;
 
 // ====================== 必备函数 ======================
 void main_Initial(void)
 {
     // 一般外设初始化
     LED_Init();
-    // RGB_LED_Init() ;
-    // Buzzer_Init() ;
     // 互斥锁设备初始化
     OLED_Init();
-    // MPU6050_Init() ; // 暂时不需要
     // 定时器最后初始化
     Timer_Init();
 }
@@ -43,102 +38,118 @@ void print_FreeRtos_Task(void)
             cpu_usage ,
             taskStats[i].usStackHighWaterMark);
     }
-    // 顺手打印队列状态
-    // printf("Queue: used=%d free=%d\n",
-    // uxQueueMessagesWaiting(Q_OLED_Data),
-    // uxQueueSpacesAvailable(Q_OLED_Data));
 }
 
 // ====================== 外部任务 ======================= 
 
-// =========== Task: LED闪烁(1000ms) ============ 
-void task1(void *param)
+// =========== Task: LED闪烁(1s亮1s暗) ============ 
+void task_LED(void *param)
 {
     while (1)
     {
         LED_On() ;
-        vTaskDelay(pdMS_TO_TICKS(500)) ;
+        vTaskDelay(pdMS_TO_TICKS(1000)) ;
         LED_OFF() ;
-        vTaskDelay(pdMS_TO_TICKS(500)) ;
+        vTaskDelay(pdMS_TO_TICKS(1000)) ;
     }
 }
 
-// =========== Task: OLED数据显示(100ms) ============ 
-void Task_OLED(void *param)
+// =========== Task: AI模型风险预测 ============ 
+void Task_AI_Predict(void*param)
 {
-    // setup
-    // 存在互斥锁,所以在全局里面顺序进行初始化
-    // loop
+    // AI模型初始化
+    Ai_Init() ;
+    
+    // AI预测模型
+    while (1)
+    {   
+        float risk = Ai_Predict(Sensor_History[history_head].temp, 
+        Sensor_History[history_head].humi, Sensor_History[history_head].Gray);
+
+        if (xSemaphoreTake(data_Mutex , portMAX_DELAY))
+        {
+            // 本次数据的结果表明DHT11还在初始化中,所以risk清零
+            if (Sensor_History[history_head].temp < 0.1f && Sensor_History[history_head].humi < 0.1f)
+            {
+                risk = 0.0f ;
+            }
+            Sensor_Data.risk = risk ;
+            xSemaphoreGive(data_Mutex) ;
+        }
+        
+        xEventGroupSetBits(sensorEventGroup, AI_Risk_Bit);  // AI预测任务完成标志位
+
+        vTaskDelay(pdMS_TO_TICKS(1000)) ;
+    }
+}
+
+void Task_RGY_Buzzer(void*param)
+{
+    RGB_LED_Init() ;
+    Buzzer_Init() ;
+    static float risk_current ;
     while (1)
     {
-        if (xSemaphoreTake(I2C_Mutex , portMAX_DELAY))
+        // 数据读取
+        static float risk_last = 0.0f ;
+        if (xSemaphoreTake(data_Mutex , portMAX_DELAY))
         {
-            if (xSemaphoreTake(data_Mutex , portMAX_DELAY))
-            {
-                Sensor_Data_copy = Sensor_Data ;
-                xSemaphoreGive(data_Mutex) ;
-            }
-            
-            // OLED_Printf(0 ,  0 , OLED_6X8 , "Ax:%.2f  roll:%.2f" , 
-            //            Sensor_Data_copy.AccX  , Sensor_Data_copy.roll) ;
-            // OLED_Printf(0 , 20 , OLED_6X8 , "Ay:%.2f pitch:%.2f" ,
-            //            Sensor_Data_copy.AccY  , Sensor_Data_copy.pitch) ;
-            // OLED_Printf(0 , 40 , OLED_6X8 , "Az:%.2f   yaw:%.2f" , 
-            //            Sensor_Data_copy.AccZ  , Sensor_Data_copy.yaw) ;
-            static int num = 0 ;
-            OLED_ShowNum(0 , 0 , num++ , 3 , OLED_8X16 ) ;
-
-            // 尾处理
-            OLED_Update() ; // 耗时:27ms
-            xSemaphoreGive(I2C_Mutex) ;
+            risk_current = Sensor_Data.risk ;
+            xSemaphoreGive(data_Mutex) ;
         }
-        vTaskDelay(pdMS_TO_TICKS(100)) ;
+    
+        // 一般情况下是绿色
+        if (risk_current < 1.0f && risk_current > 0)
+        {
+            RGB_LED_Set(false,true,false) ; // 绿色:安全
+            Buzzer_Set_duty_1024(0) ;       // 提示结束,停止鸣叫
+        }
+        // 预测风险从正常转为可能存在风险时,蜂鸣器短鸣3次进行提示
+        else if (risk_last < 1.0f && (risk_current >= 1.0f && risk_current < 2.0f))
+        {
+            Buzzer_Set_duty_1024(50) ;
+            vTaskDelay(pdMS_TO_TICKS(100)) ;
+            Buzzer_Set_duty_1024(0) ;
+            vTaskDelay(pdMS_TO_TICKS(100)) ;
+
+            Buzzer_Set_duty_1024(50) ;
+            vTaskDelay(pdMS_TO_TICKS(100)) ;
+            Buzzer_Set_duty_1024(0) ;
+            vTaskDelay(pdMS_TO_TICKS(100)) ;
+
+            Buzzer_Set_duty_1024(50) ;
+            vTaskDelay(pdMS_TO_TICKS(100)) ;
+            Buzzer_Set_duty_1024(0) ;   // 提示结束,停止鸣叫
+
+            RGB_LED_Set(false,false,true) ; // 绿色 -> 黄色
+        }
+        // 预测风险达到阈值时蜂鸣器长鸣警报,三色LED转为红色
+        else if (risk_current >= 2.0f)
+        {
+            Buzzer_Set_duty_1024(200) ; // 长鸣
+
+            RGB_LED_Set(true , false , false) ; // -> 红色
+        }
+
+        risk_last = risk_current ;  // 更新risk
+
+        vTaskDelay(pdMS_TO_TICKS(100)) ;  
     }
 }
 
-
-
-// void test(void *param)
-// {
-//     ai_model_init();
-//     printf(" ai_model_init() OK\n");
-//     while (1)
-//     {
-//         risk_level = ai_predict_level(temp, humi, gray);
-//         switch (risk_level)
-//         {
-//             case 0:
-//                 printf("LOW\n");
-//                 break;
-//             case 1:
-//                 printf("Mid\n");
-//                 break;
-//             case 2:
-//                 printf("HIGH\n");
-//                 break;
-//             default:
-//                 printf("No\n");
-//                 break;
-//         }
-//         temp += 1 ;
-//         humi -= 1 ;
-//         printf("temp %f , humi %f , gray %f \n" , temp , humi , gray) ;
-//         vTaskDelay(pdMS_TO_TICKS(1000)) ;
-//     }
-// }
-
-// ====================== 函数调度控制器 ======================= 
-
+// ====================== 任务创建 ======================= 
 void Task_Create(void)
 {
+    
     // 创建任务,RX属性在前,TX属性在后
-    xTaskCreatePinnedToCore(task1 , "Task1" , 4096 , NULL , 1 , NULL , 0) ;
-    xTaskCreatePinnedToCore(Task_OLED , "Task_OLED" , 4096 , NULL , 1 , NULL , 0) ;
-    xTaskCreatePinnedToCore(Task_Key4 , "Task_Key4" , 4096 , NULL , 1 , NULL , 0) ;
-    // 以后再记录振动
-    // xTaskCreatePinnedToCore(Task_MPU  , "Task_MPU" , 4096 , NULL , 1 , NULL , 0) ;   
-    xTaskCreatePinnedToCore(Task_DHT11, "Task_DHT11" , 3072 , NULL , 1 , NULL , 0) ;
-    xTaskCreatePinnedToCore(Task_Gray , "Task_Gray" , 4096 , NULL , 1 , NULL , 0) ;
+    xTaskCreatePinnedToCore(task_LED , "task_LED" , 4096 , NULL , 1 , NULL , 0) ;
+    xTaskCreatePinnedToCore(Task_Key4 , "Task_Key4" , 4096 , NULL , 1 , NULL , 0) ; 
+    xTaskCreatePinnedToCore(Task_Menu , "Task_Menu" , 4096 , NULL , 1 , NULL , 0) ;
 
-    // xTaskCreatePinnedToCore(test , "test" , 4096 , NULL , 1 , NULL , 0) ;
+    xTaskCreatePinnedToCore(Task_DHT11, "Task_DHT11" , 3072 , NULL , 1 , NULL , 1) ;
+    xTaskCreatePinnedToCore(Task_Gray , "Task_Gray" , 4096 , NULL , 1 , NULL , 1) ;
+    xTaskCreatePinnedToCore(Task_AI_Predict , "Task_AI_Predict" , 4096 , NULL , 1 , NULL , 1) ;
+    xTaskCreatePinnedToCore(Task_RGY_Buzzer , "Task_RGY_Buzzer" , 4096 , NULL , 1 , NULL , 1) ;
+
+    xTaskCreatePinnedToCore(Task_History_Save , "Task_H_Save" , 4096 , NULL , 1 , NULL , 0) ;
 }

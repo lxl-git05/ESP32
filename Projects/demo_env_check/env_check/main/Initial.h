@@ -19,6 +19,7 @@
 // 外设模块
 #include "MyLED.h"
 #include "OLED.h"
+#include "OLED_Menu.h"
 #include "Timer.h"
 #include "PWM.h"
 #include "Key_4.h"
@@ -29,6 +30,7 @@
 #include "DHT11.h"
 #include "RGB_LED.h"
 #include "Buzzer.h"
+#include "ai_model.h"
 
 // WIFI模块
 

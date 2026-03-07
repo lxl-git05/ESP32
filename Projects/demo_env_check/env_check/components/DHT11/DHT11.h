@@ -8,7 +8,7 @@
  
 // =============== 数据层 ===============
 
-#define DHT_Debug
+// #define DHT_Debug
 #define DHT11_DQ_GPIO_PIN       GPIO_NUM_3      // D2引脚
 
 // =============== 数据层end ===============

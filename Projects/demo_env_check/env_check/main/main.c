@@ -44,6 +44,7 @@ void app_main(void)
 
     while (1)
     {
+        /*
         // °´¼ü
         if (Key_4_Get_Status() == KEY_1_Single)
         {
@@ -70,6 +71,7 @@ void app_main(void)
             //     add = -add ;
             // }
         }
+        */
         vTaskDelay(pdMS_TO_TICKS(10)) ;
     }
 }

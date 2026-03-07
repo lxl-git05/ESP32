@@ -173,12 +173,12 @@ void Task_MPU(void *param)
             MPU6050_Raw_Deal(MPU_Delay_time_ms) ;
             if (xSemaphoreTake(data_Mutex , portMAX_DELAY))
             {
-                Sensor_Data.AccX = MPU_Real.AccX ;
-                Sensor_Data.AccY = MPU_Real.AccY ;
-                Sensor_Data.AccZ = MPU_Real.AccZ ;
-                Sensor_Data.roll = MPU_Real.roll ;
-                Sensor_Data.pitch= MPU_Real.pitch;
-                Sensor_Data.yaw  = MPU_Real.yaw  ;
+                // Sensor_Data.AccX = MPU_Real.AccX ;
+                // Sensor_Data.AccY = MPU_Real.AccY ;
+                // Sensor_Data.AccZ = MPU_Real.AccZ ;
+                // Sensor_Data.roll = MPU_Real.roll ;
+                // Sensor_Data.pitch= MPU_Real.pitch;
+                // Sensor_Data.yaw  = MPU_Real.yaw  ;
                 xSemaphoreGive(data_Mutex) ;
             }
             // Œ≤¥¶¿Ì

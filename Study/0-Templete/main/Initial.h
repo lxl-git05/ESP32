@@ -1,5 +1,5 @@
-#ifndef __INITIAL_H__
-#define __INITIAL_H__   
+#ifndef __INITIAL_H
+#define __INITIAL_H
 
 // 系统层
 #include <stdio.h>
@@ -7,6 +7,8 @@
 #include <esp_log.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
+#include "Msg.h"
 
 // 工具层
 #include "Timer_Counter.h"
@@ -18,18 +20,12 @@
 #include "MyLED.h"
 #include "OLED.h"
 #include "Timer.h"
-#include "Key.h"
 #include "PWM.h"
-#include "ADC.h"
+#include "Key.h"
+
 #include "MPU6050.h"
 #include "MPU6050_Angle.h"
 
 // WIFI模块
 
-
-// ================= 全局声明 =================
-// 初始化外设
-void Initial(void) ;
-// 打印FreeRtos参数
-void print_FreeRtos_Task(void) ;
 #endif

@@ -85,10 +85,10 @@ void OLED_Init(void)
     //配置I2C从机设备
     i2c_device_config_t oled_dev_cfg = 
     {
-        .dev_addr_length = I2C_ADDR_BIT_LEN_7,  //设置设备地址长度为7位
+        .dev_addr_length = I2C_ADDR_BIT_LEN_7,       //设置设备地址长度为7位
         .device_address = OLED_ADD >> 1,             //指定设备地址
         .scl_speed_hz = OLED_SPEED,                  //设置I2C时钟速度
-        .flags.disable_ack_check = false,       //启用ACK检查
+        .flags.disable_ack_check = false,       	 //启用ACK检查
     };
     
     //将设备添加到I2C总线并获取设备句柄

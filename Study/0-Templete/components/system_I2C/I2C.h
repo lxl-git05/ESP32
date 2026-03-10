@@ -9,6 +9,12 @@
 #include "esp_err.h"
 #include <esp_log.h>
 
+// IIC总线配置
+#define I2C_PORT    I2C_NUM_0
+// 注意: SCL和SDA的引脚顺序
+#define I2C_SCL    	GPIO_NUM_1      // D0
+#define I2C_SDA    	GPIO_NUM_2      // D1
+
 //I2C总线句柄
 extern i2c_master_bus_handle_t i2c_bus_handle;
 

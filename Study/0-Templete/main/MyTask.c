@@ -1,22 +1,18 @@
-#include "Initial.h"
+#include "MyTask.h"
 
-void Initial(void)
+// ====================== 必备函数 ======================
+void main_Initial(void)
 {
     // 一般外设初始化
-    OLED_Init();
     LED_Init();
     Key_Init();
-    PWM_Init();
-    adc_init();
-    // 外设初始化
-    // MPU6050_Init() ;                    // 初始化MPU6050
-    // MPU6050_Data_Error_Check(1000) ;    // 纠正零漂,1000次采样
-
+    // 互斥锁设备初始化
+    OLED_Init();
     // 定时器最后初始化
     Timer_Init();
 }
 
-void print_FreeRtos_Task(void)
+void FreeRtos_Task_Print(void)
 {
     TaskStatus_t taskStats[12]; // 最多打印12个任务序列
     uint32_t totalRunTime;      // 运行时间
@@ -43,8 +39,25 @@ void print_FreeRtos_Task(void)
             cpu_usage ,
             taskStats[i].usStackHighWaterMark);
     }
-    // 顺手打印队列状态
-    // printf("Queue: used=%d free=%d\n",
-    // uxQueueMessagesWaiting(Q_OLED_Data),
-    // uxQueueSpacesAvailable(Q_OLED_Data));
+}
+
+// ====================== 任务 ======================= 
+
+// =========== Task: LED闪烁(1s亮1s暗) ============ 
+void task_LED(void *param)
+{
+    while (1)
+    {
+        LED_On() ;
+        vTaskDelay(pdMS_TO_TICKS(1000)) ;
+        LED_OFF() ;
+        vTaskDelay(pdMS_TO_TICKS(1000)) ;
+    }
+}
+
+// ====================== 任务创建 ======================= 
+void Task_Create(void)
+{
+    // 创建任务,RX属性在前,TX属性在后
+    xTaskCreatePinnedToCore(task_LED , "task_LED" , 4096 , NULL , 1 , NULL , 0) ;
 }

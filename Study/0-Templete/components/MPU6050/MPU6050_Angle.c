@@ -1,7 +1,7 @@
 #include "MPU6050_Angle.h"
 
 // 全局变量
-ImuOffset_Typedef  MPU_Offset;				// 误差纠正参数
+ImuOffset_Typedef  	 MPU_Offset;			// 误差纠正参数
 ImuCali_Typedef		 MPU_Cali	 ;			// 纠正后的数据
 ImuReal_Typedef 	 MPU_Real  ;			// 最终的确定角度
 int isMPU_Still_Flag ;						// MPU6050静止状态检测
@@ -142,4 +142,8 @@ void MPU6050_Raw_Deal(int Deal_dt_ms)
 	// 得到Roll和Pitch
 	MPU_Real.roll  = gyroAngleX ;
 	MPU_Real.pitch = gyroAngleY;
+	// Ax Ay Az
+	MPU_Real.AccX = MPU_Cali.AX ;
+	MPU_Real.AccY = MPU_Cali.AY ;
+	MPU_Real.AccZ = MPU_Cali.AZ ;
 }

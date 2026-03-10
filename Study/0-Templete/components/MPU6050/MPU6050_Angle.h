@@ -2,6 +2,7 @@
 #define __MPU6050_ANGLE_H
 
 #include "MPU6050.h"
+#include "Msg.h"
 
 // 预先给定的MPU6050零漂值
 #define MPU6050_AX_Offset	0.0367513411f
@@ -26,7 +27,7 @@ typedef struct
 	
 	float	GyroErrorX ;	// 角速度误差 
 	float	GyroErrorY ;	// 角速度误差
-	float GyroErrorZ ;	// 角速度误差
+	float 	GyroErrorZ ;	// 角速度误差
 }ImuOffset_Typedef;
 
 // 得到的零偏纠正值
@@ -70,4 +71,7 @@ void MPU6050_Raw_Deal(int Deal_dt_ms) ;
 void MPU_Still_Check(void);
 // 静止检测后自动纠正零漂
 void MPU6050_Data_Error_Check_Auto(void) ;
+
+// 任务
+void Task_MPU(void *param) ;
 #endif

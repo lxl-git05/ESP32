@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include "Key.h"
 
-// ================================ ≥ı ºªØ ================================
+// ================================ ÂàùÂßãÂåñ ================================
 void Key_Init(void)
 {
     gpio_config_t Key_cfg = {
         .mode = GPIO_MODE_INPUT, 
-        .pin_bit_mask = 1ULL << Key_0_GPIO_PIN,     // GPIOø⁄,–Ë“™ π”√—⁄¬Î 1ULL << GPIO_NUM
+        .pin_bit_mask = 1ULL << Key_0_GPIO_PIN,     // GPIOÂè£,ÈúÄË¶Å‰ΩøÁî®Êé©Á†Å 1ULL << GPIO_NUM
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .pull_up_en = GPIO_PULLUP_ENABLE,
         .intr_type = GPIO_INTR_DISABLE,
@@ -15,19 +15,19 @@ void Key_Init(void)
     gpio_config(&Key_cfg);
 }
 
-// ============================== ∞¥º¸“∆÷≤¥˙¬Î ==============================
+// ============================== ÊåâÈîÆÁßªÊ§ç‰ª£Á†Å ==============================
 #define KEY_PRESSED				1
 #define KEY_UNPRESSED			0
 
-#define KEY_TIME_DOUBLE			200		// ≈–∂œÀ´ª˜„–÷µ,±‰Œ™0 ±µ•ª˜œÏ”¶ÀŸ∂»∫‹øÏ
-#define KEY_TIME_LONG			1200	// ≈–∂œ≥§∞¥„–÷µ
-#define KEY_TIME_REPEAT			100		// ≥§∞¥œ¬ ˝æ›±‰ªØøÏ¬˝
+#define KEY_TIME_DOUBLE			200		// Âà§Êñ≠ÂèåÂáªÈòàÂÄº,Âèò‰∏∫0Êó∂ÂçïÂáªÂìçÂ∫îÈÄüÂ∫¶ÂæàÂø´
+#define KEY_TIME_LONG			1200	// Âà§Êñ≠ÈïøÊåâÈòàÂÄº
+#define KEY_TIME_REPEAT			100		// ÈïøÊåâ‰∏ãÊï∞ÊçÆÂèòÂåñÂø´ÊÖ¢
 
-uint8_t Key_Flag[KEY_COUNT];			// ∏˜∏ˆ∞¥º¸µƒ±Í÷æŒª
+uint8_t Key_Flag[KEY_COUNT];			// ÂêÑ‰∏™ÊåâÈîÆÁöÑÊ†áÂøó‰Ωç
 
-// ∏ƒ–¥∑Ω∑®:
-// ÷ª–Ë“™∏ƒ±‰Key_GetStateµƒ“˝Ω≈±Í«©º¥ø…
-uint8_t Key_GetState(uint8_t n)		// µ√µΩ∞¥º¸◊¥Ã¨
+// ÊîπÂÜôÊñπÊ≥ï:
+// Âè™ÈúÄË¶ÅÊîπÂèòKey_GetStateÁöÑÂºïËÑöÊ†áÁ≠æÂç≥ÂèØ
+uint8_t Key_GetState(uint8_t n)		// ÂæóÂà∞ÊåâÈîÆÁä∂ÊÄÅ
 {
 	if (n == KEY_0)
 	{
@@ -60,7 +60,7 @@ uint8_t Key_GetState(uint8_t n)		// µ√µΩ∞¥º¸◊¥Ã¨
 	return KEY_UNPRESSED;
 }
 
-// ≤Èø¥∞¥º¸ «∑Ò±ª∞¥œ¬(ºÏ≤È±Í÷æŒªHOLD)
+// Êü•ÁúãÊåâÈîÆÊòØÂê¶Ë¢´Êåâ‰∏ã(Ê£ÄÊü•Ê†áÂøó‰ΩçHOLD)
 uint8_t Key_Check(uint8_t n, uint8_t Flag)
 {
 	if (Key_Flag[n] & Flag)	

@@ -4,7 +4,7 @@
 #include "MPU6050.h"
 #include "Msg.h"
 
-// Ô¤ÏÈ¸ø¶¨µÄMPU6050ÁãÆ¯Öµ
+// é¢„å…ˆç»™å®šçš„MPU6050é›¶æ¼‚å€¼
 #define MPU6050_AX_Offset	0.0367513411f
 #define MPU6050_AY_Offset	0.00807421841f
 #define MPU6050_AZ_Offset	0.129159927f
@@ -12,66 +12,66 @@
 #define MPU6050_GY_Offset 	0.509746492f
 #define MPU6050_GZ_Offset 	-0.00763365673f
 
-// ÁãÆ¯×ÔĞ£×¼
-#define STILL_ACCEL_THRES_BASE_SQ   (0.05f * 0.05f)   // »ù´¡ãĞÖµ 0.05g
-#define STILL_GYRO_THRES_BASE_SQ    (3.0f * 3.0f)     // »ù´¡ãĞÖµ 3¡ã/s
-#define STILL_REQUIRED_CNT          100               // Á¬Ğø100´ÎÂú×ã²ÅÈ·ÈÏ¾²Ö¹£¨¿Éµ÷ 50~150£©
-#define OFFSET_LEARNING_RATE 				0.005f	  // ÁãÆ¯×ÔĞ£×¼Ç÷½üÂÊ
+// é›¶æ¼‚è‡ªæ ¡å‡†
+#define STILL_ACCEL_THRES_BASE_SQ   (0.05f * 0.05f)   // åŸºç¡€é˜ˆå€¼ 0.05g
+#define STILL_GYRO_THRES_BASE_SQ    (3.0f * 3.0f)     // åŸºç¡€é˜ˆå€¼ 3Â°/s
+#define STILL_REQUIRED_CNT          100               // è¿ç»­100æ¬¡æ»¡è¶³æ‰ç¡®è®¤é™æ­¢ï¼ˆå¯è°ƒ 50~150ï¼‰
+#define OFFSET_LEARNING_RATE 				0.005f	  // é›¶æ¼‚è‡ªæ ¡å‡†è¶‹è¿‘ç‡
 
-// ½Ç¶ÈºÍ¼ÓËÙ¶ÈÎó²îÖµ
+// è§’åº¦å’ŒåŠ é€Ÿåº¦è¯¯å·®å€¼
 typedef struct
 {
-	float AccErrorX	 ;	// ¼ÓËÙ¶ÈÎó²î
-	float AccErrorY	 ;	// ¼ÓËÙ¶ÈÎó²î
-	float AccErrorZ	 ;	// ¼ÓËÙ¶ÈÀÛ´ÎÆ½¾ùÖµ,Ë®Æ½·ÅÖÃÊ±Ó¦¸ÃÊÇ1g,ËùÒÔ²»½øĞĞÁãÆ¯´¦Àí!
+	float AccErrorX	 ;	// åŠ é€Ÿåº¦è¯¯å·®
+	float AccErrorY	 ;	// åŠ é€Ÿåº¦è¯¯å·®
+	float AccErrorZ	 ;	// åŠ é€Ÿåº¦ç´¯æ¬¡å¹³å‡å€¼,æ°´å¹³æ”¾ç½®æ—¶åº”è¯¥æ˜¯1g,æ‰€ä»¥ä¸è¿›è¡Œé›¶æ¼‚å¤„ç†!
 	
-	float	GyroErrorX ;	// ½ÇËÙ¶ÈÎó²î 
-	float	GyroErrorY ;	// ½ÇËÙ¶ÈÎó²î
-	float 	GyroErrorZ ;	// ½ÇËÙ¶ÈÎó²î
+	float	GyroErrorX ;	// è§’é€Ÿåº¦è¯¯å·® 
+	float	GyroErrorY ;	// è§’é€Ÿåº¦è¯¯å·®
+	float 	GyroErrorZ ;	// è§’é€Ÿåº¦è¯¯å·®
 }ImuOffset_Typedef;
 
-// µÃµ½µÄÁãÆ«¾ÀÕıÖµ
+// å¾—åˆ°çš„é›¶åçº æ­£å€¼
 typedef struct
 {
-	float AX ;	// ¼ÓËÙ¶È
-	float AY ;	// ¼ÓËÙ¶È
-	float AZ ;	// ¼ÓËÙ¶È,ÓÉÓÚ±ğµÄÊı¾İ´¦Àí¶¼ÊÇÊ¹ÓÃÈ¥ÁãÆ¯µÄÊı¾İ,ËùÒÔÕâÀï²»É¾³ıÁË,µ«ÊÇÊÂÊµÉÏ¾ÍÊÇraw
+	float AX ;	// åŠ é€Ÿåº¦
+	float AY ;	// åŠ é€Ÿåº¦
+	float AZ ;	// åŠ é€Ÿåº¦,ç”±äºåˆ«çš„æ•°æ®å¤„ç†éƒ½æ˜¯ä½¿ç”¨å»é›¶æ¼‚çš„æ•°æ®,æ‰€ä»¥è¿™é‡Œä¸åˆ é™¤äº†,ä½†æ˜¯äº‹å®ä¸Šå°±æ˜¯raw
 	
-	float GX ;	// ½ÇËÙ¶È
-	float GY ;	// ½ÇËÙ¶È
-	float GZ ;	// ½ÇËÙ¶È
+	float GX ;	// è§’é€Ÿåº¦
+	float GY ;	// è§’é€Ÿåº¦
+	float GZ ;	// è§’é€Ÿåº¦
 }ImuCali_Typedef;
 
-// µÃµ½µÄÕæÊµÊı¾İ
+// å¾—åˆ°çš„çœŸå®æ•°æ®
 typedef struct
 {
-	float	AccX ;	  // ¼ÓËÙ¶Èx 
-	float	AccY ;	  // ¼ÓËÙ¶Èy
-	float 	AccZ ;	  // ¼ÓËÙ¶Èz
+	float	AccX ;	  // åŠ é€Ÿåº¦x 
+	float	AccY ;	  // åŠ é€Ÿåº¦y
+	float 	AccZ ;	  // åŠ é€Ÿåº¦z
 	
-	float	roll ;	// ½Ç¶Èx 
-	float	pitch ;	// ½Ç¶Èy
-	float 	yaw ;	// ½Ç¶Èz
-}ImuReal_Typedef ;			// ÕæÊµ½Ç¶ÈÖµ
+	float	roll ;	// è§’åº¦x 
+	float	pitch ;	// è§’åº¦y
+	float 	yaw ;	// è§’åº¦z
+}ImuReal_Typedef ;			// çœŸå®è§’åº¦å€¼
 
-// Òı³ö²ÎÊı
-extern ImuOffset_Typedef  MPU_Offset;			// Îó²î¾ÀÕı²ÎÊı
-extern ImuCali_Typedef	  MPU_Cali	 ;			// ¾ÀÕıºóµÄÊı¾İ
-extern ImuReal_Typedef 	  MPU_Real  ;			// ×îÖÕµÄÈ·¶¨½Ç¶È
+// å¼•å‡ºå‚æ•°
+extern ImuOffset_Typedef  MPU_Offset;			// è¯¯å·®çº æ­£å‚æ•°
+extern ImuCali_Typedef	  MPU_Cali	 ;			// çº æ­£åçš„æ•°æ®
+extern ImuReal_Typedef 	  MPU_Real  ;			// æœ€ç»ˆçš„ç¡®å®šè§’åº¦
 extern int isMPU_Still_Flag ;
 
-// ************º¯Êı************
-// ×Ô¶¯¾ÀÕıÎó²î(¿ÉÅäºÏ°´¼üÊ¹ÓÃ)
+// ************å‡½æ•°************
+// è‡ªåŠ¨çº æ­£è¯¯å·®(å¯é…åˆæŒ‰é”®ä½¿ç”¨)
 void MPU6050_Data_Error_Check(int Sanple_Cnt) ;
-// ¼õÈ¥Îó²îºóµÄÊı¾İ
+// å‡å»è¯¯å·®åçš„æ•°æ®
 void MPU6050_Raw_Error_Update(void) ;
-// Êı¾İÉî¶È´¦Àí
+// æ•°æ®æ·±åº¦å¤„ç†
 void MPU6050_Raw_Deal(int Deal_dt_ms) ;
-// ¼ì²â¾²Ö¹×´Ì¬º¯Êı
+// æ£€æµ‹é™æ­¢çŠ¶æ€å‡½æ•°
 void MPU_Still_Check(void);
-// ¾²Ö¹¼ì²âºó×Ô¶¯¾ÀÕıÁãÆ¯
+// é™æ­¢æ£€æµ‹åè‡ªåŠ¨çº æ­£é›¶æ¼‚
 void MPU6050_Data_Error_Check_Auto(void) ;
 
-// ÈÎÎñ
+// ä»»åŠ¡
 void Task_MPU(void *param) ;
 #endif

@@ -1,6 +1,6 @@
 #include "Msg.h"
 
-// пео╒м╗╣ю©Б
+// Д©║Ф│╞И─ И│⌠Е╨⌠
 
 void Msg_Create(void)
 {

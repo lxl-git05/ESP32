@@ -3,9 +3,9 @@
 void app_main(void)
 {
     main_Initial() ;
-    // ´´½¨Í¨ĞÅµÀÂ·,¼ÇµÃÑéÖ¤ÊÇ·ñÎªNULL
+    // åˆ›å»ºé€šä¿¡é“è·¯,è®°å¾—éªŒè¯æ˜¯å¦ä¸ºNULL
     Msg_Create() ;
-    // ´´½¨ÈÎÎñ,RXÊôĞÔÔÚÇ°,TXÊôĞÔÔÚºó
+    // åˆ›å»ºä»»åŠ¡,RXå±æ€§åœ¨å‰,TXå±æ€§åœ¨å
     Task_Create() ;
 
     while (1)
@@ -19,9 +19,9 @@ void app_main(void)
     }
 }
 
-// ¶¨Ê±Æ÷1msÖĞ¶Ï,FreeRtos¼ÇµÃ¼ÓISRºó×º
+// å®šæ—¶å™¨1msä¸­æ–­,FreeRtosè®°å¾—åŠ ISRåç¼€
 void Timer_Callback_1ms(void)
 {
-    // ¹¦ÄÜ1:Key¸üĞÂ
+    // åŠŸèƒ½1:Keyæ›´æ–°
     Key_Tick() ;
 }

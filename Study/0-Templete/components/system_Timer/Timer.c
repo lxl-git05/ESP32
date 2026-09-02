@@ -5,9 +5,9 @@
 
 #include "Timer.h"
 
-// ¹©Íâ²¿Ê¹ÓÃµÄÖĞ¶ÏÈõ¶¨Òå»Øµ÷º¯Êı:1msµ÷ÓÃÒ»´Î
+// ä¾›å¤–éƒ¨ä½¿ç”¨çš„ä¸­æ–­å¼±å®šä¹‰å›è°ƒå‡½æ•°:1msè°ƒç”¨ä¸€æ¬¡
 /*
-    ²»×¼Ê¹ÓÃprintf , ESP_LOGx , malloc , free , vtaskDelay µÈº¯Êı
+    ä¸å‡†ä½¿ç”¨printf , ESP_LOGx , malloc , free , vtaskDelay ç­‰å‡½æ•°
 */
 __attribute__((weak))
 void IRAM_ATTR Timer_Callback_1ms(void)
@@ -16,41 +16,41 @@ void IRAM_ATTR Timer_Callback_1ms(void)
 }
 
 
-// ¶¨Òå»Øµ÷º¯Êı
+// å®šä¹‰å›è°ƒå‡½æ•°
 bool gptimer_Callback(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_ctx)
 {
     Timer_Callback_1ms();
     return true ;
 }
 
-// ¶¨Ê±Æ÷³õÊ¼»¯
+// å®šæ—¶å™¨åˆå§‹åŒ–
 void Timer_Init(void)
 {
-    // ÅäÖÃ¶¨Ê±Æ÷
+    // é…ç½®å®šæ—¶å™¨
     gptimer_handle_t gptimer_handle ;
     static gptimer_config_t Timer_config = {
-        .clk_src = GPTIMER_CLK_SRC_DEFAULT ,    // Ä¬ÈÏÊ±ÖÓÔ´
-        .direction = GPTIMER_COUNT_UP ,         // ÏòÉÏ¼ÆÊı
-        .resolution_hz = 1000000 ,              // 1M ·Ö±æÂÊ
+        .clk_src = GPTIMER_CLK_SRC_DEFAULT ,    // é»˜è®¤æ—¶é’Ÿæº
+        .direction = GPTIMER_COUNT_UP ,         // å‘ä¸Šè®¡æ•°
+        .resolution_hz = 1000000 ,              // 1M åˆ†è¾¨ç‡
     };
     gptimer_new_timer( &Timer_config , &gptimer_handle) ;
 
-    // ÅäÖÃ¶¨Ê±ÖĞ¶Ï
+    // é…ç½®å®šæ—¶ä¸­æ–­
     gptimer_alarm_config_t alarm_config = {
         .alarm_count = 1000,                 // 1k -> 1ms
-        .reload_count = 0,                      // ÖØ×°ÔØÖµ
-        .flags.auto_reload_on_alarm = true ,    // ×Ô¶¯ÖØ×°ÔØ
+        .reload_count = 0,                      // é‡è£…è½½å€¼
+        .flags.auto_reload_on_alarm = true ,    // è‡ªåŠ¨é‡è£…è½½
     };
     gptimer_set_alarm_action(gptimer_handle, &alarm_config) ;
 
-    // ÅäÖÃÖĞ¶Ï»Øµ÷º¯Êı
+    // é…ç½®ä¸­æ–­å›è°ƒå‡½æ•°
     gptimer_event_callbacks_t cbs = {
         .on_alarm = gptimer_Callback,
     };
     gptimer_register_event_callbacks(gptimer_handle , &cbs , NULL);
 
-    // Ê¹ÄÜ¶¨Ê±Æ÷
+    // ä½¿èƒ½å®šæ—¶å™¨
     gptimer_enable(gptimer_handle);
-    // ¿ªÆô¶¨Ê±Æ÷
+    // å¼€å¯å®šæ—¶å™¨
     gptimer_start(gptimer_handle);
 }

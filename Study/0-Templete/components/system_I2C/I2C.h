@@ -9,16 +9,16 @@
 #include "esp_err.h"
 #include <esp_log.h>
 
-// IIC×ÜÏßÅäÖÃ
+// IICæ€»çº¿é…ç½®
 #define I2C_PORT    I2C_NUM_0
-// ×¢Òâ: SCLºÍSDAµÄÒı½ÅË³Ğò
+// æ³¨æ„: SCLå’ŒSDAçš„å¼•è„šé¡ºåº
 #define I2C_SCL    	GPIO_NUM_1      // D0
 #define I2C_SDA    	GPIO_NUM_2      // D1
 
-//I2C×ÜÏß¾ä±ú
+//I2Cæ€»çº¿å¥æŸ„
 extern i2c_master_bus_handle_t i2c_bus_handle;
 
-// IIC×ÜÏß³õÊ¼»¯
+// IICæ€»çº¿åˆå§‹åŒ–
 void I2C_Master_Init(void);
 
 #endif

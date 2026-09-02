@@ -5,11 +5,11 @@ void LED_Init(void)
 {
     gpio_config_t LED_cfg = {
 
-        .pin_bit_mask = 1ULL << LED_GPIO_NUM,     // GPIO¿Ú,ÐèÒªÊ¹ÓÃÑÚÂë 1ULL << GPIO_NUM_x
-        .mode = GPIO_MODE_OUTPUT,                 // GPIOÄ£Ê½
-        .pull_up_en = GPIO_PULLUP_DISABLE,        // GPIOÉÏÏÂÀ­:Ê§ÄÜ
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,    // GPIOÉÏÏÂÀ­:Ê§ÄÜ
-        .intr_type = GPIO_INTR_DISABLE,           // GPIOÖÐ¶ÏÀàÐÍ:Ê§ÄÜ
+        .pin_bit_mask = 1ULL << LED_GPIO_NUM,     // GPIOå£,éœ€è¦ä½¿ç”¨æŽ©ç  1ULL << GPIO_NUM_x
+        .mode = GPIO_MODE_OUTPUT,                 // GPIOæ¨¡å¼
+        .pull_up_en = GPIO_PULLUP_DISABLE,        // GPIOä¸Šä¸‹æ‹‰:å¤±èƒ½
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,    // GPIOä¸Šä¸‹æ‹‰:å¤±èƒ½
+        .intr_type = GPIO_INTR_DISABLE,           // GPIOä¸­æ–­ç±»åž‹:å¤±èƒ½
 
     };
     gpio_config(&LED_cfg);

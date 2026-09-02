@@ -2,25 +2,25 @@
 #define __TIMER_COUNTER_H
 
 #include <stdio.h>
-#include "stdint.h"     // uintĞèÒª
-#include "esp_timer.h"  // ÏµÍ³×ÔÔö¶¨Ê±Æ÷
+#include "stdint.h"     // uintéœ€è¦
+#include "esp_timer.h"  // ç³»ç»Ÿè‡ªå¢å®šæ—¶å™¨
 
-// Ê¾·¶:
+// ç¤ºèŒƒ:
 
 //Timer_Counter_Begin() ;
 // func()	
 //Timer_Counter_End() ;
 
-extern uint64_t time_us ;				// ´úÂëÖ®¼äµÄÊ±¼ä¼ä¸ô
-extern uint64_t time_Func_us ;		    // º¯ÊıÁ½´ÎÖ´ĞĞµÄÊ±¼ä¼ä¸ô
+extern uint64_t time_us ;				// ä»£ç ä¹‹é—´çš„æ—¶é—´é—´éš”
+extern uint64_t time_Func_us ;		    // å‡½æ•°ä¸¤æ¬¡æ‰§è¡Œçš„æ—¶é—´é—´éš”
 
-// ¼ÆÊ±Æ÷¿ªÊ¼¼ÆÊ±
+// è®¡æ—¶å™¨å¼€å§‹è®¡æ—¶
 void Timer_Counter_Begin(void);
-// ¼ÆÊ±Æ÷½áÊø¼ÆÊ±
+// è®¡æ—¶å™¨ç»“æŸè®¡æ—¶
 void Timer_Counter_End(void);
-// ¼ÆËãÒ»¸ö¶à´ÎÖ´ĞĞµÄº¯ÊıµÄÃ¿´ÎÖ´ĞĞ¼ä¸ôÊ±¼ä
+// è®¡ç®—ä¸€ä¸ªå¤šæ¬¡æ‰§è¡Œçš„å‡½æ•°çš„æ¯æ¬¡æ‰§è¡Œé—´éš”æ—¶é—´
 void Timer_Counter_Func(void) ;
-// ´òÓ¡Õ¹Ê¾
+// æ‰“å°å±•ç¤º
 void Timer_Counter_Print(void) ;
 
 #endif

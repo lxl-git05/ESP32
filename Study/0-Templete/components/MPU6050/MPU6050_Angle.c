@@ -1,20 +1,20 @@
 #include "MPU6050_Angle.h"
 
-// È«¾Ö±äÁ¿
-ImuOffset_Typedef  	 MPU_Offset;			// Îó²î¾ÀÕı²ÎÊı
-ImuCali_Typedef		 MPU_Cali	 ;			// ¾ÀÕıºóµÄÊı¾İ
-ImuReal_Typedef 	 MPU_Real  ;			// ×îÖÕµÄÈ·¶¨½Ç¶È
-int isMPU_Still_Flag ;						// MPU6050¾²Ö¹×´Ì¬¼ì²â
+// å…¨å±€å˜é‡
+ImuOffset_Typedef  	 MPU_Offset;			// è¯¯å·®çº æ­£å‚æ•°
+ImuCali_Typedef		 MPU_Cali	 ;			// çº æ­£åçš„æ•°æ®
+ImuReal_Typedef 	 MPU_Real  ;			// æœ€ç»ˆçš„ç¡®å®šè§’åº¦
+int isMPU_Still_Flag ;						// MPU6050é™æ­¢çŠ¶æ€æ£€æµ‹
 
-// »ı·ÖºóµÄ½Ç¶È
+// ç§¯åˆ†åçš„è§’åº¦
 float gyroAngleX = 0.0f ;
 float gyroAngleY = 0.0f ;
 
-// ×Ô¶¯¾ÀÕıÎó²î(¿ÉÅäºÏ°´¼üÊ¹ÓÃ)
+// è‡ªåŠ¨çº æ­£è¯¯å·®(å¯é…åˆæŒ‰é”®ä½¿ç”¨)
 void MPU6050_Data_Error_Check(int Sample_Cnt)
 {
     if (Sample_Cnt < 200 || Sample_Cnt > 2000)
-        Sample_Cnt = 1000;  // Ä¬ÈÏ1000´Î£¬¸üÎÈ¶¨
+        Sample_Cnt = 1000;  // é»˜è®¤1000æ¬¡ï¼Œæ›´ç¨³å®š
 
     float sum_ax = 0.0f, sum_ay = 0.0f, sum_az = 0.0f;
     float sum_gx = 0.0f, sum_gy = 0.0f, sum_gz = 0.0f;
@@ -31,50 +31,50 @@ void MPU6050_Data_Error_Check(int Sample_Cnt)
         sum_gz += MPU_Raw_Data.GZ;
     }
 
-    // Ô­Ê¼Êı¾İÁãÆ«£¨g ºÍ ¡ã/s£©
+    // åŸå§‹æ•°æ®é›¶åï¼ˆg å’Œ Â°/sï¼‰
     MPU_Offset.AccErrorX = sum_ax / Sample_Cnt;
     MPU_Offset.AccErrorY = sum_ay / Sample_Cnt;
-    // ¿ÉÑ¡£º¼ÆËãAZÏà¶ÔÓÚ1gµÄÆ«ÒÆ£¨Ğ¡Æ«ÒÆĞ£Õı£©
-    MPU_Offset.AccErrorZ = sum_az / Sample_Cnt - 1.0f;  // Ö»¼õĞ¡Æ«²î£¬²»¼õÖØÁ¦
+    // å¯é€‰ï¼šè®¡ç®—AZç›¸å¯¹äº1gçš„åç§»ï¼ˆå°åç§»æ ¡æ­£ï¼‰
+    MPU_Offset.AccErrorZ = sum_az / Sample_Cnt - 1.0f;  // åªå‡å°åå·®ï¼Œä¸å‡é‡åŠ›
 
     MPU_Offset.GyroErrorX = sum_gx / Sample_Cnt;
     MPU_Offset.GyroErrorY = sum_gy / Sample_Cnt;
     MPU_Offset.GyroErrorZ = sum_gz / Sample_Cnt;
 
-    // ³õÊ¼»¯×ËÌ¬
+    // åˆå§‹åŒ–å§¿æ€
     MPU_Real.roll  = 0.0f;
     MPU_Real.pitch = 0.0f;
     MPU_Real.yaw   = 0.0f;
 
     MPU_Real.AccX = 0.0f;
     MPU_Real.AccY = 0.0f;
-    MPU_Real.AccZ = 1.0f;  // ÖØµã
+    MPU_Real.AccZ = 1.0f;  // é‡ç‚¹
 }
-// ¼ì²â¾²Ö¹×´Ì¬º¯Êı 18us , ¼ì²â¾²Ö¹Ê¹ÓÃÁËÀúÊ·Êı¾İ£¬´ıÓÅ»¯ÎªËæ»·¾³¶ø±ä
+// æ£€æµ‹é™æ­¢çŠ¶æ€å‡½æ•° 18us , æ£€æµ‹é™æ­¢ä½¿ç”¨äº†å†å²æ•°æ®ï¼Œå¾…ä¼˜åŒ–ä¸ºéšç¯å¢ƒè€Œå˜
 void MPU_Still_Check(void)
 {
-	// º¯ÊıË³ĞòÖ´ĞĞ£¬È·±£µÃµ½Ğ¡³µÕæÊµµÄ×´Ì¬
-	static int still_times_cnt = 0;	// ¾²Ö¹×´Ì¬´ÎÊıÍ³¼Æ,³¬¹ı100´ÎÊÓÎª¾²Ö¹
+	// å‡½æ•°é¡ºåºæ‰§è¡Œï¼Œç¡®ä¿å¾—åˆ°å°è½¦çœŸå®çš„çŠ¶æ€
+	static int still_times_cnt = 0;	// é™æ­¢çŠ¶æ€æ¬¡æ•°ç»Ÿè®¡,è¶…è¿‡100æ¬¡è§†ä¸ºé™æ­¢
 	
 	float MPU_Temp_Cali_Data[6] = {MPU_Raw_Data.AX - MPU6050_AX_Offset , MPU_Raw_Data.AY - MPU6050_AY_Offset , MPU_Raw_Data.AZ - MPU6050_AZ_Offset,
 													MPU_Raw_Data.GX - MPU6050_GX_Offset , MPU_Raw_Data.GY - MPU6050_GY_Offset , MPU_Raw_Data.GZ - MPU6050_GZ_Offset};
-	// ÏÈ¼ì²âACC,×ÛºÏ´óÓÚ0.05g¼´ÎªÔË¶¯,Ç§Íò¼ÇµÃAZ - 1
+	// å…ˆæ£€æµ‹ACC,ç»¼åˆå¤§äº0.05gå³ä¸ºè¿åŠ¨,åƒä¸‡è®°å¾—AZ - 1
 	if ( MPU_Temp_Cali_Data[0] * MPU_Temp_Cali_Data[0] + MPU_Temp_Cali_Data[1] * MPU_Temp_Cali_Data[1] + (MPU_Temp_Cali_Data[2] - 1.0f) * (MPU_Temp_Cali_Data[2] - 1.0f) > STILL_ACCEL_THRES_BASE_SQ )
 	{
 		still_times_cnt = 0 ;
-		isMPU_Still_Flag = 0 ;	// ÔÚÔË¶¯
+		isMPU_Still_Flag = 0 ;	// åœ¨è¿åŠ¨
 		return ;
 	}
-	// ×ÛºÏ½ÇËÙ¶È´óÓÚ3¶ÈÎªÔË¶¯
+	// ç»¼åˆè§’é€Ÿåº¦å¤§äº3åº¦ä¸ºè¿åŠ¨
 	if ( MPU_Temp_Cali_Data[3] * MPU_Temp_Cali_Data[3] + MPU_Temp_Cali_Data[4] * MPU_Temp_Cali_Data[4] + MPU_Temp_Cali_Data[5] * MPU_Temp_Cali_Data[5]> STILL_GYRO_THRES_BASE_SQ)
 	{
 		still_times_cnt = 0 ;
-		isMPU_Still_Flag = 0 ;	// ÔÚÔË¶¯
+		isMPU_Still_Flag = 0 ;	// åœ¨è¿åŠ¨
 		return ;
 	}
-	// ¾²Ö¹
+	// é™æ­¢
 	still_times_cnt ++ ;
-	// È·¶¨¾²Ö¹
+	// ç¡®å®šé™æ­¢
 	if (still_times_cnt == STILL_REQUIRED_CNT)
 	{
 		still_times_cnt = 0 ;
@@ -82,27 +82,27 @@ void MPU_Still_Check(void)
 	}
 }
 
-// ¾²Ö¹¼ì²âºó×Ô¶¯¾ÀÕıÁãÆ¯ 30us×óÓÒ
+// é™æ­¢æ£€æµ‹åè‡ªåŠ¨çº æ­£é›¶æ¼‚ 30uså·¦å³
 void MPU6050_Data_Error_Check_Auto(void)
 {
-	if (isMPU_Still_Flag == 1)  // È·ÈÏ¾²Ö¹
+	if (isMPU_Still_Flag == 1)  // ç¡®è®¤é™æ­¢
 	{
-		// ¼ÓËÙ¶È£¨X/YÇ÷0£¬ZÇ÷1g£©
+		// åŠ é€Ÿåº¦ï¼ˆX/Yè¶‹0ï¼ŒZè¶‹1gï¼‰
 		MPU_Offset.AccErrorX += (MPU_Raw_Data.AX - MPU_Offset.AccErrorX) * OFFSET_LEARNING_RATE;
 		MPU_Offset.AccErrorY += (MPU_Raw_Data.AY - MPU_Offset.AccErrorY) * OFFSET_LEARNING_RATE;
 		MPU_Offset.AccErrorZ += ( (MPU_Raw_Data.AZ - 1.0f) - MPU_Offset.AccErrorZ) * OFFSET_LEARNING_RATE;
 		
-		// ÍÓÂİÒÇÁãÆ«»ºÂıÏòµ±Ç°¾²Ö¹ÖµÊÕÁ²
+		// é™€èºä»ªé›¶åç¼“æ…¢å‘å½“å‰é™æ­¢å€¼æ”¶æ•›
 		MPU_Offset.GyroErrorX += (MPU_Raw_Data.GX - MPU_Offset.GyroErrorX) * OFFSET_LEARNING_RATE;
 		MPU_Offset.GyroErrorY += (MPU_Raw_Data.GY - MPU_Offset.GyroErrorY) * OFFSET_LEARNING_RATE;
 		MPU_Offset.GyroErrorZ += (MPU_Raw_Data.GZ - MPU_Offset.GyroErrorZ) * OFFSET_LEARNING_RATE;
 	}
 }
 
-// ¼õÈ¥Îó²îºóµÄ¹éÁãÊı¾İ
+// å‡å»è¯¯å·®åçš„å½’é›¶æ•°æ®
 void MPU6050_Raw_Error_Update(void)
 {	
-	// µÃµ½¹éÁãÊı¾İ
+	// å¾—åˆ°å½’é›¶æ•°æ®
 	MPU_Cali.AX = MPU_Raw_Data.AX - MPU_Offset.AccErrorX ;
 	MPU_Cali.AY = MPU_Raw_Data.AY - MPU_Offset.AccErrorY ;
 	MPU_Cali.AZ = MPU_Raw_Data.AZ - MPU_Offset.AccErrorZ ;
@@ -112,34 +112,34 @@ void MPU6050_Raw_Error_Update(void)
 	MPU_Cali.GZ = MPU_Raw_Data.GZ - MPU_Offset.GyroErrorZ ;
 }
 
-// Êı¾İÉî¶È´¦Àí
+// æ•°æ®æ·±åº¦å¤„ç†
 void MPU6050_Raw_Deal(int Deal_dt_ms)
 {
-	// ¸ù¾İ¼ÓËÙ¶ÈµÃµ½¾²Ì¬½Ç¶È
-	// ¼ÆËã·­¹ö½Ç£¨ÈÆ X Öá£©¡ª Ê¹ÓÃ Y ºÍ Z ÖáµÄ¼ÓËÙ¶ÈÖµ
+	// æ ¹æ®åŠ é€Ÿåº¦å¾—åˆ°é™æ€è§’åº¦
+	// è®¡ç®—ç¿»æ»šè§’ï¼ˆç»• X è½´ï¼‰â€” ä½¿ç”¨ Y å’Œ Z è½´çš„åŠ é€Ÿåº¦å€¼
 	float accAngleX = atan2(MPU_Cali.AY, MPU_Cali.AZ)  * 180 / 3.14159265358 ;
-	// ¼ÆËã¸©Ñö½Ç£¨ÈÆ Y Öá£©¡ª Ê¹ÓÃ X ºÍ Z ÖáµÄ¼ÓËÙ¶ÈÖµ
+	// è®¡ç®—ä¿¯ä»°è§’ï¼ˆç»• Y è½´ï¼‰â€” ä½¿ç”¨ X å’Œ Z è½´çš„åŠ é€Ÿåº¦å€¼
 	float accAngleY = atan2(-MPU_Cali.AX, MPU_Cali.AZ) * 180 / 3.14159265358 ;
 	
-	// µÃµ½´ÖÂÔ»ı·Ö½Ç¶È
+	// å¾—åˆ°ç²—ç•¥ç§¯åˆ†è§’åº¦
 	gyroAngleX += MPU_Cali.GX * Deal_dt_ms * 1.0 / 1000;
 	gyroAngleY += MPU_Cali.GY * Deal_dt_ms * 1.0 / 1000;
 	
-	// µÃµ½Æ«º½½Çyaw
+	// å¾—åˆ°åèˆªè§’yaw
 	if (MPU_Cali.GZ < 0)
 	{
 		MPU_Real.yaw += MPU_Cali.GZ * Deal_dt_ms * 1.0  / 1000;
 	}
 	else
 	{
-		MPU_Real.yaw += MPU_Cali.GZ * Deal_dt_ms * 1.08 / 1000;		// ±ê¶¨µÄÎó²î²ÎÊı
+		MPU_Real.yaw += MPU_Cali.GZ * Deal_dt_ms * 1.08 / 1000;		// æ ‡å®šçš„è¯¯å·®å‚æ•°
 	}
 	
-	// µÃµ½»¥²¹ÂË²¨½Ç¶È
+	// å¾—åˆ°äº’è¡¥æ»¤æ³¢è§’åº¦
 	gyroAngleX = 0.98 * gyroAngleX + 0.02 * accAngleX;
 	gyroAngleY = 0.98 * gyroAngleY + 0.02 * accAngleY;
 	
-	// µÃµ½RollºÍPitch
+	// å¾—åˆ°Rollå’ŒPitch
 	MPU_Real.roll  = gyroAngleX ;
 	MPU_Real.pitch = gyroAngleY;
 	// Ax Ay Az

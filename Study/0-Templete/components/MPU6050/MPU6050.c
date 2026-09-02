@@ -1,6 +1,6 @@
 #include "MPU6050.h"
 #include "I2C.h"
-// ====================== ºê¶¨ÒåMPU6050µÄ¼Ä´æÆ÷ĞÅÏ¢,Ê¹µÃ¸üºÃÀí½â ====================
+// ====================== å®å®šä¹‰MPU6050çš„å¯„å­˜å™¨ä¿¡æ¯,ä½¿å¾—æ›´å¥½ç†è§£ ====================
 #define	MPU6050_SMPLRT_DIV		0x19
 #define	MPU6050_CONFIG			0x1A
 #define	MPU6050_GYRO_CONFIG		0x1B
@@ -25,24 +25,24 @@
 #define	MPU6050_PWR_MGMT_2		0x6C
 #define	MPU6050_WHO_AM_I		0x75
 
-// ¼ÓËÙ¶È¼ÆÁ¿³Ì¶ÔÓ¦¼Ä´æÆ÷Öµ
-#define ACCEL_2G        0x00    // ¡À2g
-#define ACCEL_4G        0x08    // ¡À4g
-#define ACCEL_8G        0x10    // ¡À8g
-#define ACCEL_16G       0x18    // ¡À16g
+// åŠ é€Ÿåº¦è®¡é‡ç¨‹å¯¹åº”å¯„å­˜å™¨å€¼
+#define ACCEL_2G        0x00    // Â±2g
+#define ACCEL_4G        0x08    // Â±4g
+#define ACCEL_8G        0x10    // Â±8g
+#define ACCEL_16G       0x18    // Â±16g
 
-// ÍÓÂİÒÇÁ¿³Ì¶ÔÓ¦¼Ä´æÆ÷Öµ
-#define GYRO_250        0x00    // ¡À250¡ã/s
-#define GYRO_500        0x08    // ¡À500¡ã/s
-#define GYRO_1000       0x10    // ¡À1000¡ã/s
-#define GYRO_2000       0x18    // ¡À2000¡ã/s
+// é™€èºä»ªé‡ç¨‹å¯¹åº”å¯„å­˜å™¨å€¼
+#define GYRO_250        0x00    // Â±250Â°/s
+#define GYRO_500        0x08    // Â±500Â°/s
+#define GYRO_1000       0x10    // Â±1000Â°/s
+#define GYRO_2000       0x18    // Â±2000Â°/s
 
-// ==================== ÖØÒª:È·¶¨ÏëÒªµÄÁ¿³Ì ====================
+// ==================== é‡è¦:ç¡®å®šæƒ³è¦çš„é‡ç¨‹ ====================
 #define ACCEL_RANGE     ACCEL_2G
 #define GYRO_RANGE      GYRO_250
 
-// ºê¶¨ÒåÈ·¶¨ÂúÁ¿³Ì
-/* ==================== ÁéÃô¶Èºê£¨ÓÃÓÚÊı¾İ×ª»»£© ==================== */
+// å®å®šä¹‰ç¡®å®šæ»¡é‡ç¨‹
+/* ==================== çµæ•åº¦å®ï¼ˆç”¨äºæ•°æ®è½¬æ¢ï¼‰ ==================== */
 #if   ACCEL_RANGE == ACCEL_2G
     #define ACCEL_SENSITIVITY   16384.0f   // LSB/g
 #elif ACCEL_RANGE == ACCEL_4G
@@ -54,7 +54,7 @@
 #endif
 
 #if   GYRO_RANGE == GYRO_250
-    #define GYRO_SENSITIVITY    131.0f     // LSB/(¡ã/s)
+    #define GYRO_SENSITIVITY    131.0f     // LSB/(Â°/s)
 #elif GYRO_RANGE == GYRO_500
     #define GYRO_SENSITIVITY    65.5f
 #elif GYRO_RANGE == GYRO_1000
@@ -63,89 +63,89 @@
     #define GYRO_SENSITIVITY    16.4f
 #endif
 
-// ²ÎÊıÅäÖÃ:×¢Òâ,Òı½ÅºÍOLEDÍêÈ«ÏàÍ¬,¹²ÓÃÒ»¸öIIC×ÜÏß,Òª¸ÄÒ»Æğ¸Ä
-#define MPU6050_ADDRESS 	0xD0		// MPU6050µØÖ·(AD0½ÓµØ) !!!8Î»!!!
+// å‚æ•°é…ç½®:æ³¨æ„,å¼•è„šå’ŒOLEDå®Œå…¨ç›¸åŒ,å…±ç”¨ä¸€ä¸ªIICæ€»çº¿,è¦æ”¹ä¸€èµ·æ”¹
+#define MPU6050_ADDRESS 	0xD0		// MPU6050åœ°å€(AD0æ¥åœ°) !!!8ä½!!!
 #define MPU6050_SPEED  		400000
 
-// MPU6050Éè±¸¾ä±ú
+// MPU6050è®¾å¤‡å¥æŸ„
 i2c_master_dev_handle_t mpu_dev_handle;
 
-// Íâ²¿ÒıÓÃ²ÎÊı
-MPU6050_Raw_Data  	MPU_Raw_Data ;	// ×î³õµÄ½Ç¶È
+// å¤–éƒ¨å¼•ç”¨å‚æ•°
+MPU6050_Raw_Data  	MPU_Raw_Data ;	// æœ€åˆçš„è§’åº¦
 
-// ============================== ³õÊ¼»¯ÅäÖÃ ==============================
-// ³õÊ¼»¯MPU6050Ïà¹ØÅäÖÃ
+// ============================== åˆå§‹åŒ–é…ç½® ==============================
+// åˆå§‹åŒ–MPU6050ç›¸å…³é…ç½®
 void MPU6050_Init(void)
 {
-	// ======================= Òı½Å³õÊ¼»¯ =======================
-	//ÅäÖÃI2C×ÜÏß
+	// ======================= å¼•è„šåˆå§‹åŒ– =======================
+	//é…ç½®I2Cæ€»çº¿
     I2C_Master_Init() ;
-    //ÅäÖÃI2C´Ó»úÉè±¸
+    //é…ç½®I2Cä»æœºè®¾å¤‡
     i2c_device_config_t mpu_dev_cfg = 
     {
-        .dev_addr_length = I2C_ADDR_BIT_LEN_7,  		//ÉèÖÃÉè±¸µØÖ·³¤¶ÈÎª7Î»
-        .device_address = MPU6050_ADDRESS >> 1,         //Ö¸¶¨Éè±¸µØÖ·
-        .scl_speed_hz = MPU6050_SPEED,                  //ÉèÖÃI2CÊ±ÖÓËÙ¶È
-        .flags.disable_ack_check = false,       		//ÆôÓÃACK¼ì²é
+        .dev_addr_length = I2C_ADDR_BIT_LEN_7,  		//è®¾ç½®è®¾å¤‡åœ°å€é•¿åº¦ä¸º7ä½
+        .device_address = MPU6050_ADDRESS >> 1,         //æŒ‡å®šè®¾å¤‡åœ°å€
+        .scl_speed_hz = MPU6050_SPEED,                  //è®¾ç½®I2Cæ—¶é’Ÿé€Ÿåº¦
+        .flags.disable_ack_check = false,       		//å¯ç”¨ACKæ£€æŸ¥
     };
-	//½«Éè±¸Ìí¼Óµ½I2C×ÜÏß²¢»ñÈ¡Éè±¸¾ä±ú
+	//å°†è®¾å¤‡æ·»åŠ åˆ°I2Cæ€»çº¿å¹¶è·å–è®¾å¤‡å¥æŸ„
     ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_bus_handle, &mpu_dev_cfg, &mpu_dev_handle));
-	// ======================= ¼Ä´æÆ÷³õÊ¼»¯ =======================
-	// ´Ë´¦½öÅäÖÃÁË²¿·ÖÖØÒªµÄ¼Ä´æÆ÷
-	MPU6050_WriteReg(MPU6050_PWR_MGMT_1, 0x01);		// µçÔ´¹ÜÀí¼Ä´æÆ÷1£¬È¡ÏûË¯ÃßÄ£Ê½£¬Ñ¡ÔñÊ±ÖÓÔ´ÎªXÖáÍÓÂİÒÇ
-	MPU6050_WriteReg(MPU6050_PWR_MGMT_2, 0x00);		// µçÔ´¹ÜÀí¼Ä´æÆ÷2£¬±£³ÖÄ¬ÈÏÖµ0£¬ËùÓĞÖá¾ù²»´ı»ú
-	MPU6050_WriteReg(MPU6050_SMPLRT_DIV, 0x09);		// ²ÉÑùÂÊ·ÖÆµ¼Ä´æÆ÷£¬ÅäÖÃ²ÉÑùÂÊ
-	MPU6050_WriteReg(MPU6050_CONFIG, 0x06);			// ÅäÖÃ¼Ä´æÆ÷£¬ÅäÖÃDLPF
+	// ======================= å¯„å­˜å™¨åˆå§‹åŒ– =======================
+	// æ­¤å¤„ä»…é…ç½®äº†éƒ¨åˆ†é‡è¦çš„å¯„å­˜å™¨
+	MPU6050_WriteReg(MPU6050_PWR_MGMT_1, 0x01);		// ç”µæºç®¡ç†å¯„å­˜å™¨1ï¼Œå–æ¶ˆç¡çœ æ¨¡å¼ï¼Œé€‰æ‹©æ—¶é’Ÿæºä¸ºXè½´é™€èºä»ª
+	MPU6050_WriteReg(MPU6050_PWR_MGMT_2, 0x00);		// ç”µæºç®¡ç†å¯„å­˜å™¨2ï¼Œä¿æŒé»˜è®¤å€¼0ï¼Œæ‰€æœ‰è½´å‡ä¸å¾…æœº
+	MPU6050_WriteReg(MPU6050_SMPLRT_DIV, 0x09);		// é‡‡æ ·ç‡åˆ†é¢‘å¯„å­˜å™¨ï¼Œé…ç½®é‡‡æ ·ç‡
+	MPU6050_WriteReg(MPU6050_CONFIG, 0x06);			// é…ç½®å¯„å­˜å™¨ï¼Œé…ç½®DLPF
 	
-	MPU6050_WriteReg(MPU6050_GYRO_CONFIG, GYRO_RANGE);	  	// ÍÓÂİÒÇÅäÖÃ¼Ä´æÆ÷
-	MPU6050_WriteReg(MPU6050_ACCEL_CONFIG, ACCEL_RANGE);	// ¼ÓËÙ¶È¼ÆÅäÖÃ¼Ä´æÆ÷
+	MPU6050_WriteReg(MPU6050_GYRO_CONFIG, GYRO_RANGE);	  	// é™€èºä»ªé…ç½®å¯„å­˜å™¨
+	MPU6050_WriteReg(MPU6050_ACCEL_CONFIG, ACCEL_RANGE);	// åŠ é€Ÿåº¦è®¡é…ç½®å¯„å­˜å™¨
 }
-// ============================== »ù´¡º¯Êı ==============================
+// ============================== åŸºç¡€å‡½æ•° ==============================
 
-// Ğ´Èëµ¥¸öÊı¾İ
+// å†™å…¥å•ä¸ªæ•°æ®
 void MPU6050_WriteReg(uint8_t RegAddress , uint8_t Data)
 {
-	// Ó²¼şIIC
+	// ç¡¬ä»¶IIC
 	uint8_t writebuffer[2];
     writebuffer[0] = RegAddress;
     writebuffer[1] = Data;
     ESP_ERROR_CHECK(i2c_master_transmit(mpu_dev_handle, writebuffer, 2, 1000));
 }
 
-// ¶ÁÈ¡µ¥¸öÊı¾İ
+// è¯»å–å•ä¸ªæ•°æ®
 // uint8_t MPU6050_ReadReg(uint8_t RegAddress)
 // {
-// 	// ¶ÁÈ¡µÄÊı¾İ
+// 	// è¯»å–çš„æ•°æ®
 // 	uint8_t Data ;
 	
-// 	// Ó²¼şIIC
+// 	// ç¡¬ä»¶IIC
 // 	ESP_ERROR_CHECK(i2c_master_transmit_receive(mpu_dev_handle, &RegAddress, 1, &Data, 1, 1000));
-// 	// ·µ»ØÊı¾İ
+// 	// è¿”å›æ•°æ®
 
 // 	return Data;
 // }
-// ============================== ÉÏ²ãÅäÖÃ ==============================
+// ============================== ä¸Šå±‚é…ç½® ==============================
 
-// // µÃµ½MPU6050µÄµØÖ·
+// // å¾—åˆ°MPU6050çš„åœ°å€
 // uint8_t MPU6050_GetID(void)
 // {
 // 	return MPU6050_ReadReg(MPU6050_WHO_AM_I) ;
 // }
-// Ô­Ê¼Êı¾İ¸üĞÂ
+// åŸå§‹æ•°æ®æ›´æ–°
 void MPU6050_Update_Data(void)
 {
-	// Êı¾İ½ÓÊÕÇø,Á¬Ğø¶ÁÈ¡
+	// æ•°æ®æ¥æ”¶åŒº,è¿ç»­è¯»å–
 	uint8_t buf[14];
-	// Ó²¼şIICÁ¬Ğø¶ÁÈ¡
+	// ç¡¬ä»¶IICè¿ç»­è¯»å–
 	uint8_t  write_buffer = MPU6050_ACCEL_XOUT_H ;
 	ESP_ERROR_CHECK(i2c_master_transmit_receive(mpu_dev_handle, &write_buffer, 1, buf, 14, 1000));
 	
-	// Êı¾İ´¦Àí
-	// µÃµ½¼ÓËÙ¶È
+	// æ•°æ®å¤„ç†
+	// å¾—åˆ°åŠ é€Ÿåº¦
 	MPU_Raw_Data.AX  = ((int16_t)(buf[0] << 8 | buf[1])) * 1.0 / ACCEL_SENSITIVITY ;
 	MPU_Raw_Data.AY  = ((int16_t)(buf[2] << 8 | buf[3])) * 1.0 / ACCEL_SENSITIVITY ;
 	MPU_Raw_Data.AZ  = ((int16_t)(buf[4] << 8 | buf[5])) * 1.0 / ACCEL_SENSITIVITY ;
-	// µÃµ½½ÇËÙ¶È(Ìø¹ıÁËÎÂ¶È)
+	// å¾—åˆ°è§’é€Ÿåº¦(è·³è¿‡äº†æ¸©åº¦)
 	MPU_Raw_Data.GX = ((int16_t)(buf[8]  << 8 | buf[9]))  * 1.0 / GYRO_SENSITIVITY ;
 	MPU_Raw_Data.GY = ((int16_t)(buf[10] << 8 | buf[11])) * 1.0 / GYRO_SENSITIVITY ;
 	MPU_Raw_Data.GZ = ((int16_t)(buf[12] << 8 | buf[13])) * 1.0 / GYRO_SENSITIVITY ;

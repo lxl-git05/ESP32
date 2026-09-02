@@ -2,12 +2,12 @@
 #define __BUTTON_H
 
 #include "driver/gpio.h"
-#include "stdint.h"         // uint8_tĞèÒª
+#include "stdint.h"         // uint8_téœ€è¦
 
-// °´¼üGPIO(GPIOxºÍDx²»Í¬,Ò»¶¨Òª¼ÇµÃ!!!)
+// æŒ‰é”®GPIO(GPIOxå’ŒDxä¸åŒ,ä¸€å®šè¦è®°å¾—!!!)
 #define Key_0_GPIO_PIN GPIO_NUM_6
 
-// ================ °´¼ü×´Ì¬¼ì²âÏà¹Øºê¶¨Òå ================
+// ================ æŒ‰é”®çŠ¶æ€æ£€æµ‹ç›¸å…³å®å®šä¹‰ ================
 #define KEY_COUNT				4
 
 #define KEY_0					0
@@ -24,7 +24,7 @@
 
 #define KEY_REPEAT				0x40
 
-// ================ °´¼üÏà¹Øº¯Êı ================
+// ================ æŒ‰é”®ç›¸å…³å‡½æ•° ================
 void Key_Init(void);
 uint8_t Key_Check(uint8_t n, uint8_t Flag);
 void Key_Tick(void);

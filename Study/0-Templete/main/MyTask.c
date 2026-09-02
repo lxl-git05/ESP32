@@ -1,63 +1,62 @@
-#include "MyTask.h"
+#include <stdio.h>
+#include "driver/gptimer.h"
+#include "driver/gpio.h"
+#include "esp_attr.h"
 
-// ====================== ±Ø±¸º¯Êı ======================
-void main_Initial(void)
+#include "Timer.h"
+
+// ä¾›å¤–éƒ¨ä½¿ç”¨çš„ä¸­æ–­å¼±å®šä¹‰å›è°ƒå‡½æ•°:1msè°ƒç”¨ä¸€æ¬¡
+/*
+    ä¸å‡†ä½¿ç”¨printf , ESP_LOGx , malloc , free , vtaskDelay ç­‰å‡½æ•°
+*/
+__attribute__((weak))
+void IRAM_ATTR Timer_Callback_1ms(void)
 {
-    // Ò»°ãÍâÉè³õÊ¼»¯
-    LED_Init();
-    Key_Init();
-    // »¥³âËøÉè±¸³õÊ¼»¯
-    OLED_Init();
-    // ¶¨Ê±Æ÷×îºó³õÊ¼»¯
-    Timer_Init();
+    
 }
 
-void FreeRtos_Task_Print(void)
+
+// å®šä¹‰å›è°ƒå‡½æ•°
+bool gptimer_Callback(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_ctx)
 {
-    TaskStatus_t taskStats[12]; // ×î¶à´òÓ¡12¸öÈÎÎñĞòÁĞ
-    uint32_t totalRunTime;      // ÔËĞĞÊ±¼ä
-    // µÃµ½task×´Ì¬½á¹¹Ìå
-    UBaseType_t taskNum = uxTaskGetSystemState(taskStats,12,&totalRunTime);
-    // ´ò±í
-    printf("Total Run Time: %lu\n", totalRunTime);
-    printf("TaskNum: %d\n", taskNum);
-    // ´òÓ¡ÈÎÎñÃû×Ö , ÓÅÏÈ¼¶ , ÔËĞĞ×´Ì¬ , ÔËĞĞÊ±¼ä , ×îĞ¡Ê£ÓàÕ»¿Õ¼ä(µ¥Î»Îª×Ö)
-    const char *state_str[] = { // ÈÎÎñµ÷¶È×´Ì¬
-        "Running", "Ready", "Blocked", "Suspended", "Deleted"
-    }; 
-    for (int i = 0; i < taskNum; i++)
-    {
-        float cpu_usage = (float)taskStats[i].ulRunTimeCounter * 100.0f / totalRunTime;
-        printf("Task: %-12s | Pri: %d | State: ",
-            taskStats[i].pcTaskName,
-            taskStats[i].uxCurrentPriority);
-
-        printf("%s", state_str[taskStats[i].eCurrentState]);
-
-        printf(" | RunTime: %lu | CPU: %6.2f%% | StackFree: %lu\n",
-            taskStats[i].ulRunTimeCounter,
-            cpu_usage ,
-            taskStats[i].usStackHighWaterMark);
-    }
+    Timer_Callback_1ms();
+    return true ;
 }
 
-// ====================== ÈÎÎñ ======================= 
-
-// =========== Task: LEDÉÁË¸(1sÁÁ1s°µ) ============ 
-void task_LED(void *param)
+// å®šæ—¶å™¨åˆå§‹åŒ–
+void Timer_Init(void)
 {
-    while (1)
-    {
-        LED_On() ;
-        vTaskDelay(pdMS_TO_TICKS(1000)) ;
-        LED_OFF() ;
-        vTaskDelay(pdMS_TO_TICKS(1000)) ;
-    }
-}
+    // é…ç½®å®šæ—¶å™¨
+    gptimer_handle_t gptimer_handle ;
+    static gptimer_config_t Timer_config = {
+        .clk_src = GPTIMER_CLK_SRC_DEFAULT ,    // é»˜è®¤æ—¶é’Ÿæº
+        .direction = GPTIMER_COUNT_UP ,         // å‘ä¸Šè®¡æ•°
+        .resolution_hz = 1000000 ,              // 1M åˆ†è¾¨ç‡
+    };
+    gptimer_new_timer( &Timer_config , &gptimer_handle) ;
 
-// ====================== ÈÎÎñ´´½¨ ======================= 
+    // é…ç½®å®šæ—¶ä¸­æ–­
+    gptimer_alarm_config_t alarm_config = {
+        .alarm_count = 1000,                 // 1k -> 1ms
+        .reload_count = 0,                      // é‡è£…è½½å€¼
+        .flags.auto_reload_on_alarm = true ,    // è‡ªåŠ¨é‡è£…è½½
+    };
+    gptimer_set_alarm_action(gptimer_handle, &alarm_config) ;
+
+    // é…ç½®ä¸­æ–­å›è°ƒå‡½æ•°
+    gptimer_event_callbacks_t cbs = {
+        .on_alarm = gptimer_Callback,
+    };
+    gptimer_register_event_callbacks(gptimer_handle , &cbs , NULL);
+
+    // ä½¿èƒ½å®šæ—¶å™¨
+    gptimer_enable(gptimer_handle);
+    // å¼€å¯å®šæ—¶å™¨
+    gptimer_start(gptimer_handle);
+}
+// ====================== ä»»åŠ¡åˆ›å»º ======================= 
 void Task_Create(void)
 {
-    // ´´½¨ÈÎÎñ,RXÊôĞÔÔÚÇ°,TXÊôĞÔÔÚºó
+    // åˆ›å»ºä»»åŠ¡,RXå±æ€§åœ¨å‰,TXå±æ€§åœ¨å
     xTaskCreatePinnedToCore(task_LED , "task_LED" , 4096 , NULL , 1 , NULL , 0) ;
 }

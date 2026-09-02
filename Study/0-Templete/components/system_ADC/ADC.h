@@ -3,10 +3,10 @@
 
 #include "esp_adc/adc_oneshot.h"
 
-// ³õÊ¼»¯
+// åˆå§‹åŒ–
 void adc_init(adc_channel_t adc_channel);
 
-// ¶ÁÈ¡rawÖµ
+// è¯»å–rawå€¼
 void  ADC_Read_Raw(int *ADC_Data , adc_channel_t adc_Channel);
 
 #endif

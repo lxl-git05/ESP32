@@ -8,26 +8,26 @@
 #include "esp_err.h"
 #include <esp_log.h>
 
-// ÄÚ²¿²ÎÊý¶¨Òå
+// å†…éƒ¨å‚æ•°å®šä¹‰
 typedef struct
 {
-	float 	AX ;	// ¼ÓËÙ¶Èx
-	float 	AY ;	// ¼ÓËÙ¶Èy
-	float	AZ ;	// ¼ÓËÙ¶Èz
-	float	GX ;	// ½ÇËÙ¶Èx 
-	float	GY ;	// ½ÇËÙ¶Èy
-	float 	GZ ;	// ½ÇËÙ¶Èz
+	float 	AX ;	// åŠ é€Ÿåº¦x
+	float 	AY ;	// åŠ é€Ÿåº¦y
+	float	AZ ;	// åŠ é€Ÿåº¦z
+	float	GX ;	// è§’é€Ÿåº¦x 
+	float	GY ;	// è§’é€Ÿåº¦y
+	float 	GZ ;	// è§’é€Ÿåº¦z
 }MPU6050_Raw_Data ;
 
-extern MPU6050_Raw_Data  MPU_Raw_Data ;		// ×î³õµÄ½Ç¶È
+extern MPU6050_Raw_Data  MPU_Raw_Data ;		// æœ€åˆçš„è§’åº¦
 
-// ************º¯ÊýÉùÃ÷************
+// ************å‡½æ•°å£°æ˜Ž************
 
-// ³õÊ¼»¯MPU6050Ïà¹ØÅäÖÃ
+// åˆå§‹åŒ–MPU6050ç›¸å…³é…ç½®
 void MPU6050_Init(void);
-// MPU6050Ð´ÈëÊý¾Ý
+// MPU6050å†™å…¥æ•°æ®
 void MPU6050_WriteReg(uint8_t RegAddress , uint8_t Data);
-// Ô­Ê¼Êý¾Ý¸üÐÂµ½MPU6050_Raw_Data
+// åŽŸå§‹æ•°æ®æ›´æ–°åˆ°MPU6050_Raw_Data
 void MPU6050_Update_Data(void) ;
 
 #endif

@@ -3,15 +3,15 @@
 #include "stdbool.h"
 adc_oneshot_unit_handle_t adc_handle;
 
-// ADC³õÊ¼»¯
+// ADCåˆå§‹åŒ–
 void adc_init(adc_channel_t adc_channel)
 {
-    // ³õÊ¼»¯Ö»µ÷ÓÃÒ»´Î
+    // åˆå§‹åŒ–åªè°ƒç”¨ä¸€æ¬¡
     static bool is_adc_unit_init = false ;
     if (is_adc_unit_init == false)
     {
         adc_oneshot_unit_init_cfg_t init_config = {
-            .unit_id = ADC_UNIT_1,  // ²»½¨ÒéÊ¹ÓÃADC2
+            .unit_id = ADC_UNIT_1,  // ä¸å»ºè®®ä½¿ç”¨ADC2
             .ulp_mode = ADC_ULP_MODE_DISABLE ,
         };
 
@@ -22,14 +22,14 @@ void adc_init(adc_channel_t adc_channel)
 
     adc_oneshot_chan_cfg_t config = {
         .atten = ADC_ATTEN_DB_12,   // 0~3.3V
-        .bitwidth = ADC_BITWIDTH_12,// 12Î»
+        .bitwidth = ADC_BITWIDTH_12,// 12ä½
     };
 
-    // ´´½¨Í¨µÀ,Õâ¸ö¿ÉÒÔ¸´Ğ´
+    // åˆ›å»ºé€šé“,è¿™ä¸ªå¯ä»¥å¤å†™
     adc_oneshot_config_channel(adc_handle, adc_channel,&config); 
 }
 
-// ¶ÁÈ¡rawÖµ
+// è¯»å–rawå€¼
 void  ADC_Read_Raw(int *ADC_Data , adc_channel_t adc_Channel)
 {
     esp_err_t err ;

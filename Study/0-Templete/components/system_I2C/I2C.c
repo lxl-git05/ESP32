@@ -1,28 +1,28 @@
 #include "I2C.h"
 
-//I2C×ÜÏß¾ä±ú
+//I2Cæ€»çº¿å¥æŸ„
 i2c_master_bus_handle_t i2c_bus_handle;
 
 void I2C_Master_Init(void)
 {
-    // ÅäÖÃ³õÊ¼»¯flag,²»ÔÊĞíÖØ¸´³õÊ¼»¯
+    // é…ç½®åˆå§‹åŒ–flag,ä¸å…è®¸é‡å¤åˆå§‹åŒ–
     static bool I2C_Init_Flag = false ;
     if (I2C_Init_Flag)
     {
         return ;
     }
-    //ÅäÖÃI2C×ÜÏß
+    //é…ç½®I2Cæ€»çº¿
     i2c_master_bus_config_t i2c_mst_cfg = 
     {
-        .clk_source = I2C_CLK_SRC_DEFAULT,      		//Ê¹ÓÃÄ¬ÈÏÊ±ÖÓÔ´
-        .i2c_port = I2C_PORT,                           //Ö¸¶¨I2C¶Ë¿ÚºÅ
-        .scl_io_num = I2C_SCL,                      	//Ö¸¶¨SCLÒı½ÅºÅ
-        .sda_io_num = I2C_SDA,                      	//Ö¸¶¨SDAÒı½ÅºÅ
-        .glitch_ignore_cnt = 7,                 		//ÉèÖÃÃ«´ÌºöÂÔ¼ÆÊı
-        .flags.enable_internal_pullup = true,  			//Æô¶¯ÄÚ²¿ÉÏÀ­µç×è
+        .clk_source = I2C_CLK_SRC_DEFAULT,      		//ä½¿ç”¨é»˜è®¤æ—¶é’Ÿæº
+        .i2c_port = I2C_PORT,                           //æŒ‡å®šI2Cç«¯å£å·
+        .scl_io_num = I2C_SCL,                      	//æŒ‡å®šSCLå¼•è„šå·
+        .sda_io_num = I2C_SDA,                      	//æŒ‡å®šSDAå¼•è„šå·
+        .glitch_ignore_cnt = 7,                 		//è®¾ç½®æ¯›åˆºå¿½ç•¥è®¡æ•°
+        .flags.enable_internal_pullup = true,  			//å¯åŠ¨å†…éƒ¨ä¸Šæ‹‰ç”µé˜»
     };
 	
-    //´´½¨I2C×ÜÏß²¢»ñÈ¡¾ä±ú
+    //åˆ›å»ºI2Cæ€»çº¿å¹¶è·å–å¥æŸ„
     ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_cfg, &i2c_bus_handle));
-    I2C_Init_Flag = true ;  // ³õÊ¼»¯Íê³É
+    I2C_Init_Flag = true ;  // åˆå§‹åŒ–å®Œæˆ
 }

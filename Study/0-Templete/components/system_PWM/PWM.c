@@ -2,18 +2,18 @@
 
 void PWM_Single_Init(int gpio_num , ledc_channel_t channel)
 {
-    // ¶¨Ê±Æ÷TIM³õÊ¼»¯
+    // å®šæ—¶å™¨TIMåˆå§‹åŒ–
     ledc_timer_config_t Timer_PWM_cfg = {
-        .timer_num = LEDC_TIMER_0 ,                 // ¶¨Ê±Æ÷0
-        .clk_cfg = LEDC_AUTO_CLK,                   // ×Ô¶¯Ñ¡Ôñ
-        .duty_resolution = LEDC_TIMER_10_BIT ,      // 1/1024µÄ·Ö±æÂÊ
-        .freq_hz = 5000 ,                           // 5KHZÆµÂÊ
-        .speed_mode = LEDC_LOW_SPEED_MODE ,         // ÍÆ¼öLOW_SPEED_MODE
+        .timer_num = LEDC_TIMER_0 ,                 // å®šæ—¶å™¨0
+        .clk_cfg = LEDC_AUTO_CLK,                   // è‡ªåŠ¨é€‰æ‹©
+        .duty_resolution = LEDC_TIMER_10_BIT ,      // 1/1024çš„åˆ†è¾¨ç‡
+        .freq_hz = 5000 ,                           // 5KHZé¢‘ç‡
+        .speed_mode = LEDC_LOW_SPEED_MODE ,         // æ¨èLOW_SPEED_MODE
     };
 
     ledc_timer_config(&Timer_PWM_cfg);
 
-    // Í¨µÀ³õÊ¼»¯
+    // é€šé“åˆå§‹åŒ–
 
     ledc_channel_config_t channel_cfg = {
         .gpio_num = gpio_num ,                // GPIO
@@ -26,8 +26,8 @@ void PWM_Single_Init(int gpio_num , ledc_channel_t channel)
     };
     ledc_channel_config(&channel_cfg) ;
 
-    // fade³õÊ¼»¯,Ê¹µÃPWM±ä»¯Æ½»¬
-    ledc_fade_func_install(0);  // 0 ±íÊ¾²»·ÖÅä×¨ÓÃÄÚ´æ
+    // fadeåˆå§‹åŒ–,ä½¿å¾—PWMå˜åŒ–å¹³æ»‘
+    ledc_fade_func_install(0);  // 0 è¡¨ç¤ºä¸åˆ†é…ä¸“ç”¨å†…å­˜
 
 }
 

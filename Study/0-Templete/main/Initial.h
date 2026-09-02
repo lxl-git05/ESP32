@@ -1,7 +1,7 @@
 #ifndef __INITIAL_H
 #define __INITIAL_H
 
-// ÏµÍ³²ã
+// ç³»ç»Ÿå±‚
 #include <stdio.h>
 #include "stdbool.h"
 #include <esp_log.h>
@@ -10,13 +10,13 @@
 
 #include "Msg.h"
 
-// ¹¤¾ß²ã
+// å·¥å…·å±‚
 #include "Timer_Counter.h"
 
-// ÍâÉèAPI
+// å¤–è®¾API
 #include "driver/gpio.h"
 
-// ÍâÉèÄ£¿é
+// å¤–è®¾æ¨¡å—
 #include "MyLED.h"
 #include "OLED.h"
 #include "Timer.h"
@@ -26,6 +26,6 @@
 #include "MPU6050.h"
 #include "MPU6050_Angle.h"
 
-// WIFIÄ£¿é
+// WIFIæ¨¡å—
 
 #endif

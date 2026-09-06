@@ -1,5 +1,5 @@
-#ifndef __HTML_H__
-#define __HTML_H__
+#ifndef __MYHTML_H__
+#define __MYHTML_H__
 
 #include <Arduino.h>
 

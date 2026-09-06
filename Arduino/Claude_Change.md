@@ -230,3 +230,10 @@
 | HTML.cpp | ./Study/1-WIFI/3-Chat_With_AI/HTML.cpp | 新增 | 保留原网页内容，改为 Arduino ESP32 C++ 编译路径 |
 
 验证：使用当前 XIAO ESP32S3 / Arduino ESP32 3.3.11 的实际 C++ 编译器参数单独编译 HTML.cpp，退出码为 0。`git diff --check` 另报告主 INO 第 32 行原有行尾空格，本轮未改动。编译检查中间产物位于 Claude_Temp/chat-html-check/。
+
+## 2026-09-06 19:54 | 检查 DeepSeek POST 请求代码
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+
+本轮只读核对 3-Chat_With_AI.ino 与 DeepSeek 官方 Chat Completions 格式，定位 Authorization 拼接、C++ 多行字符串、未声明 httpCode、未调用函数及未读取响应等问题；未修改项目源码。

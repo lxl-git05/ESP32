@@ -14,6 +14,12 @@ WiFiServer server(80);
 WiFiClient client1;
 String chatgpt_Q = "" ;  // 存储手机端发送的问题
 
+// 3. 通过内置网页提交问题:Chatgpt改为deepseek
+#include <HTTPClient.h> // 用于发送HTTP请求
+HTTPClient https;
+const char* chatgpt_token = "sk-d080ab317bee42aaaacef4102603dffd"; // 替换为自己的API Key,需要妥善保管
+char chatgpt_server[] = "https://api.deepseek.com/chat/completions";
+
 // 1. 连接到网络
 void WiFiConnect(void)
 {
@@ -118,6 +124,63 @@ void WebServer(void)
     }
 }
 
+// 3. 把网页收到的问题发送给 DeepSeek
+void Chatgpt_Ask(void)
+{
+    // 3-1 检查是否能够连接到 DeepSeek
+    if (!https.begin(chatgpt_server))
+    {
+        Serial.println("[HTTPS] Unable to connect");
+        delay(1000);
+        return;
+    }
+    // 3-2 设置请求头
+    https.addHeader("Content-Type", "application/json");
+    https.addHeader(
+        "Authorization",
+        String("Bearer ") + chatgpt_token
+    );
+
+    // 3-3 构建请求体,发送问题给 DeepSeek
+    // 防止问题中的引号、反斜杠和换行破坏 JSON
+    String question = chatgpt_Q;
+    question.replace("\\", "\\\\");
+    question.replace("\"", "\\\"");
+    question.replace("\r", "\\r");
+    question.replace("\n", "\\n");
+
+    String payload =
+        String("{\"model\":\"deepseek-v4-pro\",")
+        + "\"messages\":["
+        + "{\"role\":\"system\",\"content\":\"You are a helpful assistant.\"},"
+        + "{\"role\":\"user\",\"content\":\""
+        + question
+        + "\"}],"
+        + "\"thinking\":{\"type\":\"enabled\"},"
+        + "\"reasoning_effort\":\"high\","
+        + "\"stream\":false}";
+
+    int httpCode = https.POST(payload);
+
+    if (httpCode > 0)
+    {
+        String response = https.getString();
+
+        Serial.print("HTTP状态码: ");
+        Serial.println(httpCode);
+        Serial.println("DeepSeek原始响应:");
+        Serial.println(response);
+    }
+    else
+    {
+        Serial.print("请求失败: ");
+        Serial.println(https.errorToString(httpCode));
+    }
+
+    https.end();
+}
+
+
 void setup() 
 {
     // 串口和LED初始化
@@ -136,4 +199,22 @@ void loop()
     WiFiIsconnect() ;
     // 嵌入式网页收发
     WebServer() ;
+    // 串口判断是否开始发送问题
+    if (Serial.available() > 0) 
+    {
+        // 读取前3个字符,判断是否是"ask"命令
+        String input = Serial.readStringUntil('\n');
+        input.trim(); // 去除首尾空格
+        if (input == "ask") 
+        {
+            // 清除串口输入
+            Serial.flush();
+            Chatgpt_Ask();
+            Serial.println("Send question to DeepSeek.");
+        }
+        else 
+        {
+            Serial.println(String("Unknown command: ") + input);
+        }
+    }
 }

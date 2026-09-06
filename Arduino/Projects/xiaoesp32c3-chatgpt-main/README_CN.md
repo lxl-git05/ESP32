@@ -350,6 +350,24 @@ curl https://api.openai.com/v1/completions \
 -d '{"model": "gpt-3.5-turbo-instruct", "prompt": "Say this is a test", "temperature": 0, "max_tokens": 7}'
 ```
 
++ ==**我注**==：下面是deepseek的格式
+
+```c
+curl https://api.deepseek.com/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ${DEEPSEEK_API_KEY}" \
+  -d '{
+        "model": "deepseek-v4-pro",
+        "messages": [
+          {"role": "system", "content": "You are a helpful assistant."},
+          {"role": "user", "content": "Hello!"}
+        ],
+        "thinking": {"type": "enabled"},
+        "reasoning_effort": "high",
+        "stream": false
+      }'
+```
+
 超文本传输协议（HTTP）以请求—响应模式在客户端和服务器之间工作。
 
 **GET** 用于从指定资源请求数据，常用于从 API 中获取值。
@@ -376,10 +394,13 @@ char chatgpt_server[] = "https://api.openai.com/v1/completions";
 我们需要使用 JSON 对象发送 HTTP POST 请求。
 
 ```c
-if (https.begin(chatgpt_server)) {  // HTTPS
+if (https.begin(chatgpt_server)) 
+{  // HTTPS
+    
     https.addHeader("Content-Type", "application/json"); 
     String token_key = String("Bearer ") + chatgpt_token;
     https.addHeader("Authorization", token_key);
+    
     String payload = String("{\"model\": \"gpt-3.5-turbo-instruct\", \"prompt\": \"") + chatgpt_Q + String("\", \"temperature\": 0, \"max_tokens\": 100}"); //Instead of TEXT as Payload, can be JSON as Paylaod
     httpCode = https.POST(payload);   // start connection and send HTTP header
     payload = "";

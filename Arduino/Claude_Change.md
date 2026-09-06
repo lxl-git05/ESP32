@@ -145,3 +145,14 @@
 |--------|----------------------|----------|------|
 
 本轮只读核对 Claude_Temp/led-hardware/arduino-cli.yaml 及项目编辑器配置，说明它仅用于此前命令行编译验证，删除不影响现有日常编译配置；本轮未执行删除或修改工程配置。
+
+## 2026-09-03 19:45 | 在 Template Initial 库实现全局 FreeRTOS 任务监视
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Initial.h | ./Study/Template/Initial.h | 修改 | 声明 C/C++ 通用的 print_FreeRtos_Task 全局函数，注明阻塞时间及调用约束 |
+| Initial.c | ./Study/Template/Initial.c | 修改 | 动态采集两次任务快照，打印状态、优先级、核亲和性、剩余栈与区间 CPU 占用，处理容量变化和分配失败 |
+| Template.ino | ./Study/Template/Template.ino | 修改 | 在 loop 中调用任务监视函数并延时，约每 3 秒打印一次 |
+| 库管理说明.md | ./Study/Template/库管理说明.md | 修改 | 补充监视配置、调用方式、字段含义、控制台输出及生命周期限制 |
+
+验证：使用现有 XIAO ESP32S3 / Arduino ESP32 3.3.11 选项完整编译链接通过，开启全部编译警告且日志无警告。程序 279107 字节，静态 RAM 22308 字节。使用本机 C 编译器和模拟 FreeRTOS 接口运行真实 Initial.c，验证 18 个任务、32 位计数回绕、第二次内存分配失败、容量增长重试、第二次快照失败和句柄复用 6 个场景，快照内存均释放。git diff --check 通过。未烧录；尚未进行开发板串口实测。编译日志、测试及辅助脚本位于 Claude_Temp/freertos-monitor/，不计入变更表。
